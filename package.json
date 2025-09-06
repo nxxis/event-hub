@@ -1,0 +1,15 @@
+{
+  "name": "event-hub",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@10.14.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm -C apps/client dev",
+    "build": "pnpm -C apps/client build",
+    "preview": "pnpm -C apps/client preview"
+  }
+}
