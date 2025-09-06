@@ -1,5 +1,59 @@
 const Event = require('../models/event.model');
 
+const { createEvent } = require('ics');
+
+exports.ics = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid event id' });
+    }
+
+    const ev = await Event.findById(id).populate('organisation', 'name');
+    if (!ev) return res.status(404).json({ message: 'Event not found' });
+
+    const s = new Date(ev.startAt),
+      e = new Date(ev.endAt);
+    createEvent(
+      {
+        title: ev.title,
+        description: ev.description,
+        location: ev.venue,
+        start: [
+          s.getFullYear(),
+          s.getMonth() + 1,
+          s.getDate(),
+          s.getHours(),
+          s.getMinutes(),
+        ],
+        end: [
+          e.getFullYear(),
+          e.getMonth() + 1,
+          e.getDate(),
+          e.getHours(),
+          e.getMinutes(),
+        ],
+        organizer: {
+          name: ev.organisation?.name || 'EventHub',
+          email: 'no-reply@example.com',
+        },
+        status: 'CONFIRMED',
+      },
+      (err, value) => {
+        if (err) return next(err);
+        res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+        res.setHeader(
+          'Content-Disposition',
+          `attachment; filename="${ev.title}.ics"`
+        );
+        res.send(value);
+      }
+    );
+  } catch (err) {
+    next(err);
+  }
+};
+
 exports.list = async (req, res, next) => {
   try {
     const { search = '', tag, org, startFrom } = req.query;

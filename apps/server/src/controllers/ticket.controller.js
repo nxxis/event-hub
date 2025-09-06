@@ -1,8 +1,9 @@
 const Ticket = require('../models/ticket.model');
 const Event = require('../models/event.model');
 const { toDataURL } = require('../utils/qr');
+const { sign } = require('../utils/sign');
 
-function payloadFor(eventId, ticketId) {
+function basePayload(eventId, ticketId) {
   return `EV:${eventId}|TK:${ticketId}`;
 }
 
@@ -28,7 +29,9 @@ exports.rsvp = async (req, res, next) => {
       qrCode: 'placeholder',
     });
 
-    ticket.qrCode = payloadFor(eventId, ticket._id.toString());
+    // sign the payload
+    const signed = sign(basePayload(eventId, ticket._id.toString()));
+    ticket.qrCode = signed;
     await ticket.save();
 
     res.status(201).json({ ticketId: ticket._id, status });

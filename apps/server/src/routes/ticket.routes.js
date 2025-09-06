@@ -8,8 +8,11 @@ router.post(
   requireRole(['student', 'organiser', 'admin']),
   ctrl.rsvp
 );
+
 router.get('/me', requireAuth, ctrl.mine);
+
 router.get('/:ticketId/qr', requireAuth, ctrl.qrImage);
+
 router.post('/:ticketId/cancel', requireAuth, ctrl.cancel);
 
 module.exports = router;

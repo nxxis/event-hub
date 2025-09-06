@@ -3,6 +3,10 @@ const cors = require('cors');
 const morgan = require('morgan');
 const cookieParser = require('cookie-parser');
 
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
+
 const authRoutes = require('./routes/auth.routes');
 const eventRoutes = require('./routes/event.routes');
 const ticketRoutes = require('./routes/ticket.routes');
@@ -24,6 +28,10 @@ app.use('/api/events', eventRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/orgs', orgRoutes);
 app.use('/api/checkins', checkinRoutes);
+
+app.use(helmet());
+app.use(compression());
+app.use(rateLimit({ windowMs: 15 * 60 * 1000, max: 300 }));
 
 app.use(notFound);
 app.use(handler);
