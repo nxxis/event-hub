@@ -4,25 +4,22 @@ export default function Navbar() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
   return (
-    <nav style={{ borderBottom: '1px solid #e5e7eb', background: '#fff' }}>
-      <div
-        className="container"
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          padding: '.8rem 0',
-        }}
-      >
-        <a href="/" style={{ fontWeight: 700 }}>
+    <header
+      className="nav"
+      style={{ opacity: 0, animation: 'fadein .35s ease .05s forwards' }}
+    >
+      <div className="nav-inner">
+        <div className="brand">
+          <span className="brand-badge" />
           EventHub
-        </a>
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: '1rem' }}>
+        </div>
+        <div className="nav-spacer" />
+        <nav className="row">
           <a href="/">Home</a>
           <a href="/tickets">My Tickets</a>
           {!token ? <a href="/login">Login</a> : <a href="/logout">Logout</a>}
-        </div>
+        </nav>
       </div>
-    </nav>
+    </header>
   );
 }

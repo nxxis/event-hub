@@ -9,12 +9,19 @@ export default function EventDetail() {
   const [err, setErr] = useState('');
 
   useEffect(() => {
+    setEv(null);
     getEvent(id)
       .then(setEv)
       .catch((e) => setErr(e?.response?.data?.message || 'Failed to load'));
   }, [id]);
 
-  const handleRSVP = () => {
+  if (err) return <div className="card">Error: {err}</div>;
+  if (!ev) return <div className="card skel" style={{ height: 160 }} />;
+
+  const start = new Date(ev.startAt);
+  const end = new Date(ev.endAt);
+
+  const onRSVP = () => {
     setMsg('');
     setErr('');
     rsvp(ev._id)
@@ -24,31 +31,41 @@ export default function EventDetail() {
       );
   };
 
-  if (err) return <div className="card">{err}</div>;
-  if (!ev) return <div className="card">Loading…</div>;
-
   return (
-    <div className="card">
-      <h2 style={{ marginTop: 0 }}>{ev.title}</h2>
-      <p style={{ color: 'var(--muted)' }}>
-        {ev.venue} • {new Date(ev.startAt).toLocaleString()}
-      </p>
-      <p>{ev.description}</p>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <button className="btn" onClick={handleRSVP}>
-          RSVP
-        </button>
-        <a
-          className="btn"
-          href={`/api/events/${ev._id}/ics`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          Add to Calendar
-        </a>
+    <div className="stack">
+      <div className="card">
+        <div className="h1">{ev.title}</div>
+        <div className="subtle">
+          {ev.venue} • {start.toLocaleString()} – {end.toLocaleTimeString()}
+          {ev?.organisation?.name ? ` • by ${ev.organisation.name}` : ''}
+        </div>
+        <p className="mt-2" style={{ lineHeight: 1.6 }}>
+          {ev.description}
+        </p>
+        <div className="row mt-2">
+          <button className="btn" onClick={onRSVP}>
+            RSVP
+          </button>
+          <a
+            className="btn secondary"
+            href={`/api/events/${ev._id}/ics`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Add to Calendar
+          </a>
+        </div>
+        {msg && (
+          <div className="mt-2" style={{ color: '#9dffcf' }}>
+            {msg}
+          </div>
+        )}
+        {err && (
+          <div className="mt-2" style={{ color: '#ffb4b4' }}>
+            {err}
+          </div>
+        )}
       </div>
-      {msg && <p style={{ marginTop: '.5rem' }}>{msg}</p>}
-      {err && <p style={{ marginTop: '.5rem', color: 'crimson' }}>{err}</p>}
     </div>
   );
 }
