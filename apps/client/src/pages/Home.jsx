@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { listEvents } from '@eventhub/api';
+import React, { useEffect, useState, useContext } from 'react';
+import { listEvents, rsvp, myTickets } from '@eventhub/api';
+import { AuthContext } from '../context/AuthContext';
 
-function EventCard({ ev }) {
+function EventCard({ ev, onRSVP, hasTicket }) {
   const dt = new Date(ev.startAt);
   const day = dt.toLocaleDateString(undefined, {
     month: 'short',
@@ -22,9 +23,22 @@ function EventCard({ ev }) {
         </div>
       </div>
       <div className="cta">
-        <button className="btn secondary" type="button">
-          Details
-        </button>
+        {!hasTicket ? (
+          <button
+            className="btn secondary"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              onRSVP(ev._id);
+            }}
+          >
+            RSVP
+          </button>
+        ) : (
+          <button className="btn secondary" type="button">
+            Details
+          </button>
+        )}
       </div>
     </a>
   );
@@ -34,6 +48,9 @@ export default function Home() {
   const [items, setItems] = useState(null);
   const [q, setQ] = useState('');
   const [err, setErr] = useState('');
+  const { auth } = useContext(AuthContext);
+  const [ticketSet, setTicketSet] = useState(new Set());
+  const [ticketsLoaded, setTicketsLoaded] = useState(false);
 
   useEffect(() => {
     setItems(null);
@@ -43,6 +60,49 @@ export default function Home() {
         setErr(e?.response?.data?.message || 'Failed to load events')
       );
   }, [q]);
+
+  useEffect(() => {
+    let alive = true;
+    if (!auth?.user) return setTicketSet(new Set());
+    (async () => {
+      try {
+        const tickets = await myTickets();
+        if (!alive) return;
+        const set = new Set(tickets.map((t) => t.event && t.event._id));
+        setTicketSet(set);
+        setTicketsLoaded(true);
+      } catch {
+        // ignore errors
+        setTicketsLoaded(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [auth]);
+
+  const handleRSVP = async (eventId) => {
+    try {
+      const res = await rsvp(eventId);
+      if (res && res.status) {
+        setTicketSet((s) => new Set([...Array.from(s), eventId]));
+      }
+    } catch (e) {
+      // optionally show UI error
+      setErr(e?.response?.data?.message || 'Failed to RSVP');
+    }
+  };
+
+  // don't render event cards until we know user's tickets when logged in
+  if (auth?.user && !ticketsLoaded) {
+    return (
+      <div className="grid">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="card skel" style={{ height: 96 }} />
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="stack">
@@ -83,7 +143,12 @@ export default function Home() {
       {items && items.length > 0 && (
         <div className="grid">
           {items.map((ev) => (
-            <EventCard key={ev._id} ev={ev} />
+            <EventCard
+              key={ev._id}
+              ev={ev}
+              hasTicket={ticketSet.has(ev._id)}
+              onRSVP={handleRSVP}
+            />
           ))}
         </div>
       )}

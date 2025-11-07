@@ -1,10 +1,72 @@
 import React, { useEffect, useState } from 'react';
 import { myTickets, ticketQR } from '@eventhub/api';
 
+function fmtForGCal(d) {
+  return new Date(d).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+function openGoogleCalendar(ev) {
+  const startStr = fmtForGCal(ev.startAt);
+  const endStr = fmtForGCal(ev.endAt);
+  const url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+    ev.title
+  )}&dates=${startStr}/${endStr}&details=${encodeURIComponent(
+    ev.description || ''
+  )}&location=${encodeURIComponent(ev.venue || '')}`;
+  window.open(url, '_blank');
+}
+
+function openOutlook(ev) {
+  const url = `https://outlook.live.com/calendar/0/deeplink/compose?path=/calendar/action/compose&rru=addevent&startdt=${encodeURIComponent(
+    new Date(ev.startAt).toISOString()
+  )}&enddt=${encodeURIComponent(
+    new Date(ev.endAt).toISOString()
+  )}&subject=${encodeURIComponent(ev.title)}&body=${encodeURIComponent(
+    ev.description || ''
+  )}&location=${encodeURIComponent(ev.venue || '')}`;
+  window.open(url, '_blank');
+}
+
+async function downloadIcs(eventId, title) {
+  // Try to open in a new window (user gesture) to show Open/Save dialog;
+  // fall back to blob download if blocked.
+  const url = `/api/events/${eventId}/ics`;
+  const newWin = window.open('', '_blank');
+  if (newWin) {
+    try {
+      newWin.location.href = url;
+      return;
+    } catch {
+      try {
+        newWin.close();
+      } catch {
+        /* do nothing */
+      }
+    }
+  }
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(res.statusText || 'Failed to download');
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const safeTitle = (title || 'event').replace(/[^a-z0-9_\- ]/gi, '');
+    a.href = blobUrl;
+    a.download = `${safeTitle}.ics`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(blobUrl);
+  } catch (e) {
+    // best-effort: open a simple alert on failure
+    alert(e?.message || 'Failed to download calendar');
+  }
+}
+
 export default function Tickets() {
   const [items, setItems] = useState(null);
   const [qrUrls, setQrUrls] = useState({});
-  const [qrErrs, setQrErrs] = useState({});
   const [err, setErr] = useState('');
 
   useEffect(() => {
@@ -21,7 +83,7 @@ export default function Tickets() {
             try {
               const blob = await ticketQR(t._id);
               return [t._id, URL.createObjectURL(blob)];
-            } catch (e) {
+            } catch {
               return [t._id, null];
             }
           })
@@ -76,7 +138,7 @@ export default function Tickets() {
                 width={160}
                 height={160}
               />
-            ) : qrErrs[t._id] ? (
+            ) : qrUrls[t._id] === null ? (
               <span style={{ color: '#ffb4b4' }}>QR error</span>
             ) : (
               <span
@@ -84,6 +146,20 @@ export default function Tickets() {
                 style={{ display: 'inline-block', width: 160, height: 160 }}
               />
             )}
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button
+              className="btn secondary"
+              onClick={() => downloadIcs(t.event._id, t.event?.title)}
+            >
+              Download .ics
+            </button>
+            <button className="btn" onClick={() => openGoogleCalendar(t.event)}>
+              Google
+            </button>
+            <button className="btn" onClick={() => openOutlook(t.event)}>
+              Outlook
+            </button>
           </div>
         </div>
       ))}

@@ -1,12 +1,16 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useParams } from 'react-router-dom';
-import { getEvent, rsvp } from '@eventhub/api';
+import { getEvent, rsvp, myTickets } from '@eventhub/api';
+import { AuthContext } from '../context/AuthContext';
 
 export default function EventDetail() {
   const { id } = useParams();
   const [ev, setEv] = useState(null);
   const [msg, setMsg] = useState('');
   const [err, setErr] = useState('');
+  const [hasTicket, setHasTicket] = useState(false);
+  const [ticketsLoaded, setTicketsLoaded] = useState(true);
+  const { auth } = useContext(AuthContext);
 
   useEffect(() => {
     setEv(null);
@@ -14,6 +18,36 @@ export default function EventDetail() {
       .then(setEv)
       .catch((e) => setErr(e?.response?.data?.message || 'Failed to load'));
   }, [id]);
+
+  // check if the current user has a ticket for this event
+  useEffect(() => {
+    let alive = true;
+    if (!ev) return;
+    // if not logged in, nothing to load
+    if (!auth?.user) {
+      setHasTicket(false);
+      setTicketsLoaded(true);
+      return;
+    }
+
+    setTicketsLoaded(false);
+    (async () => {
+      try {
+        const tickets = await myTickets();
+        if (alive) {
+          const found = tickets.some((t) => t.event && t.event._id === ev._id);
+          setHasTicket(found);
+        }
+      } catch {
+        // ignore errors
+      } finally {
+        if (alive) setTicketsLoaded(true);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [ev, auth]);
 
   if (err) return <div className="card">Error: {err}</div>;
   if (!ev) return <div className="card skel" style={{ height: 160 }} />;
@@ -25,7 +59,11 @@ export default function EventDetail() {
     setMsg('');
     setErr('');
     rsvp(ev._id)
-      .then((res) => setMsg(`RSVP ${res.status}.`))
+      .then((res) => {
+        setMsg(`RSVP ${res.status}.`);
+        // mark as having a ticket so UI updates
+        if (res && res.status && res.status !== 'cancelled') setHasTicket(true);
+      })
       .catch((e) =>
         setErr(e?.response?.data?.message || 'You must login to RSVP')
       );
@@ -43,17 +81,23 @@ export default function EventDetail() {
           {ev.description}
         </p>
         <div className="row mt-2">
-          <button className="btn" onClick={onRSVP}>
-            RSVP
-          </button>
-          <a
-            className="btn secondary"
-            href={`/api/events/${ev._id}/ics`}
-            target="_blank"
-            rel="noreferrer"
-          >
-            Add to Calendar
-          </a>
+          {auth?.user && !ticketsLoaded ? (
+            // keep a small skeleton while we know if the user has a ticket
+            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <div className="skel" style={{ width: 80, height: 36 }} />
+              <div className="skel" style={{ width: 220, height: 18 }} />
+            </div>
+          ) : !hasTicket ? (
+            <>
+              <button className="btn" onClick={onRSVP}>
+                RSVP
+              </button>
+            </>
+          ) : (
+            <div className="subtle" style={{ marginLeft: 8 }}>
+              Already RSVP'd
+            </div>
+          )}
         </div>
         {msg && (
           <div className="mt-2" style={{ color: '#9dffcf' }}>

@@ -1,4 +1,6 @@
 const Event = require('../models/event.model');
+const Ticket = require('../models/ticket.model');
+const mongoose = require('mongoose');
 
 const { createEvent } = require('ics');
 
@@ -8,6 +10,17 @@ exports.ics = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid event id' });
     }
+
+    // Ensure the requesting user actually has a ticket for this event
+    const ticket = await Ticket.findOne({
+      event: id,
+      user: req.user && req.user.id,
+      status: { $in: ['active', 'checked_in'] },
+    });
+    if (!ticket)
+      return res
+        .status(403)
+        .json({ message: 'Must have a ticket to download calendar' });
 
     const ev = await Event.findById(id).populate('organisation', 'name');
     if (!ev) return res.status(404).json({ message: 'Event not found' });
@@ -42,9 +55,11 @@ exports.ics = async (req, res, next) => {
       (err, value) => {
         if (err) return next(err);
         res.setHeader('Content-Type', 'text/calendar; charset=utf-8');
+        // sanitize filename (basic): remove path-breaking characters
+        const safeTitle = (ev.title || 'event').replace(/[^a-z0-9 _\-]/gi, '');
         res.setHeader(
           'Content-Disposition',
-          `attachment; filename="${ev.title}.ics"`
+          `attachment; filename="${safeTitle}.ics"`
         );
         res.send(value);
       }
