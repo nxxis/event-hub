@@ -23,19 +23,19 @@ function EventCard({ ev, onRSVP, hasTicket }) {
           {ev.venue} • {time} • {ev?.organisation?.name ?? 'Organisation'}
         </div>
       </div>
-            <div className="cta">
-              {!hasTicket ? (
-                <button
-                  className="btn secondary"
-                  type="button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    onRSVP(ev);
-                  }}
-                >
-                  RSVP
-                </button>
-              ) : (
+      <div className="cta">
+        {!hasTicket ? (
+          <button
+            className="btn secondary"
+            type="button"
+            onClick={(e) => {
+              e.preventDefault();
+              onRSVP(ev);
+            }}
+          >
+            RSVP
+          </button>
+        ) : (
           <button className="btn secondary" type="button">
             Details
           </button>
@@ -83,7 +83,6 @@ export default function Home() {
       alive = false;
     };
   }, [auth]);
-
 
   const handleRSVP = async (ev) => {
     // if not logged in, redirect to login immediately (don't show confirm)
