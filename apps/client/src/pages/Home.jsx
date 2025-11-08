@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { listEvents, rsvp, myTickets } from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
 
@@ -22,19 +23,19 @@ function EventCard({ ev, onRSVP, hasTicket }) {
           {ev.venue} • {time} • {ev?.organisation?.name ?? 'Organisation'}
         </div>
       </div>
-      <div className="cta">
-        {!hasTicket ? (
-          <button
-            className="btn secondary"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              onRSVP(ev._id);
-            }}
-          >
-            RSVP
-          </button>
-        ) : (
+            <div className="cta">
+              {!hasTicket ? (
+                <button
+                  className="btn secondary"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    onRSVP(ev);
+                  }}
+                >
+                  RSVP
+                </button>
+              ) : (
           <button className="btn secondary" type="button">
             Details
           </button>
@@ -49,6 +50,8 @@ export default function Home() {
   const [q, setQ] = useState('');
   const [err, setErr] = useState('');
   const { auth } = useContext(AuthContext);
+  const nav = useNavigate();
+  const location = useLocation();
   const [ticketSet, setTicketSet] = useState(new Set());
   const [ticketsLoaded, setTicketsLoaded] = useState(false);
 
@@ -81,14 +84,32 @@ export default function Home() {
     };
   }, [auth]);
 
-  const handleRSVP = async (eventId) => {
+
+  const handleRSVP = async (ev) => {
+    // if not logged in, redirect to login immediately (don't show confirm)
+    if (!auth?.user) {
+      nav('/login', {
+        state: { message: 'You must login to RSVP', from: location.pathname },
+      });
+      return;
+    }
+
+    // confirm before sending request
+    if (!window.confirm(`RSVP to "${ev.title}"?`)) return;
+
     try {
-      const res = await rsvp(eventId);
+      const res = await rsvp(ev._id);
       if (res && res.status) {
-        setTicketSet((s) => new Set([...Array.from(s), eventId]));
+        setTicketSet((s) => new Set([...Array.from(s), ev._id]));
       }
     } catch (e) {
-      // optionally show UI error
+      // if not authenticated, redirect to login with message (fallback)
+      if (e?.response?.status === 401) {
+        nav('/login', {
+          state: { message: 'You must login to RSVP', from: location.pathname },
+        });
+        return;
+      }
       setErr(e?.response?.data?.message || 'Failed to RSVP');
     }
   };

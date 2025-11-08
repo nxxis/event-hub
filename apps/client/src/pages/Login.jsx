@@ -1,13 +1,14 @@
 import React, { useContext, useState } from 'react';
 import { login } from '@eventhub/api';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 export default function Login() {
   const nav = useNavigate();
   const { setAuth } = useContext(AuthContext);
+  const location = useLocation();
   const [form, setForm] = useState({ email: '', password: '' });
-  const [err, setErr] = useState('');
+  const [err, setErr] = useState(location?.state?.message || '');
 
   const submit = (e) => {
     e.preventDefault();
@@ -16,7 +17,9 @@ export default function Login() {
       .then(({ token, user }) => {
         localStorage.setItem('token', token);
         setAuth({ user, loading: false });
-        nav('/');
+        // redirect back to where user came from, if provided
+        const dest = location?.state?.from || '/';
+        nav(dest);
       })
       .catch((e) => setErr(e?.response?.data?.message || 'Login failed'));
   };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { myTickets, ticketQR } from '@eventhub/api';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { myTickets, ticketQR, cancelTicket } from '@eventhub/api';
 
 function fmtForGCal(d) {
   return new Date(d).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -67,7 +68,10 @@ async function downloadIcs(eventId, title) {
 export default function Tickets() {
   const [items, setItems] = useState(null);
   const [qrUrls, setQrUrls] = useState({});
+  const [canceling, setCanceling] = useState({});
   const [err, setErr] = useState('');
+  const nav = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     let alive = true;
@@ -159,6 +163,50 @@ export default function Tickets() {
             </button>
             <button className="btn" onClick={() => openOutlook(t.event)}>
               Outlook
+            </button>
+            <button
+              className="btn muted"
+              disabled={Boolean(canceling[t._id])}
+              onClick={async () => {
+                if (!window.confirm('Cancel this RSVP?')) return;
+                try {
+                  setCanceling((s) => ({ ...s, [t._id]: true }));
+                  await cancelTicket(t._id);
+                  // revoke QR url and remove ticket from list
+                  if (qrUrls[t._id]) {
+                    try {
+                      URL.revokeObjectURL(qrUrls[t._id]);
+                    } catch {
+                      /* ignore revoke errors */
+                    }
+                  }
+                  setQrUrls((q) => {
+                    const copy = { ...q };
+                    delete copy[t._id];
+                    return copy;
+                  });
+                  setItems((its) => its.filter((it) => it._id !== t._id));
+                } catch (e) {
+                  if (e?.response?.status === 401) {
+                    nav('/login', {
+                      state: {
+                        message: 'You must login to manage tickets',
+                        from: location.pathname,
+                      },
+                    });
+                    return;
+                  }
+                  setErr(e?.response?.data?.message || 'Failed to cancel');
+                } finally {
+                  setCanceling((s) => {
+                    const copy = { ...s };
+                    delete copy[t._id];
+                    return copy;
+                  });
+                }
+              }}
+            >
+              {canceling[t._id] ? 'Cancelling…' : 'Cancel RSVP'}
             </button>
           </div>
         </div>

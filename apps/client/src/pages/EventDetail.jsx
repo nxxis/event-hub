@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { useParams } from 'react-router-dom';
-import { getEvent, rsvp, myTickets } from '@eventhub/api';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { getEvent, rsvp, myTickets, cancelTicket } from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
 
 export default function EventDetail() {
@@ -10,7 +10,10 @@ export default function EventDetail() {
   const [err, setErr] = useState('');
   const [hasTicket, setHasTicket] = useState(false);
   const [ticketsLoaded, setTicketsLoaded] = useState(true);
+  const [userTicketId, setUserTicketId] = useState(null);
   const { auth } = useContext(AuthContext);
+  const nav = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     setEv(null);
@@ -35,8 +38,9 @@ export default function EventDetail() {
       try {
         const tickets = await myTickets();
         if (alive) {
-          const found = tickets.some((t) => t.event && t.event._id === ev._id);
-          setHasTicket(found);
+          const found = tickets.find((t) => t.event && t.event._id === ev._id);
+          setHasTicket(Boolean(found));
+          setUserTicketId(found ? found._id : null);
         }
       } catch {
         // ignore errors
@@ -62,11 +66,38 @@ export default function EventDetail() {
       .then((res) => {
         setMsg(`RSVP ${res.status}.`);
         // mark as having a ticket so UI updates
-        if (res && res.status && res.status !== 'cancelled') setHasTicket(true);
+        if (res && res.status && res.status !== 'cancelled') {
+          setHasTicket(true);
+          if (res.ticketId) setUserTicketId(res.ticketId);
+        }
       })
-      .catch((e) =>
-        setErr(e?.response?.data?.message || 'You must login to RSVP')
-      );
+      .catch((e) => {
+        if (e?.response?.status === 401) {
+          nav('/login', {
+            state: {
+              message: 'You must login to RSVP',
+              from: location.pathname,
+            },
+          });
+          return;
+        }
+        setErr(e?.response?.data?.message || 'You must login to RSVP');
+      });
+  };
+
+  const onCancel = () => {
+    if (!userTicketId) return;
+    // simple confirmation
+    if (!window.confirm('Cancel your RSVP for this event?')) return;
+    setMsg('');
+    setErr('');
+    cancelTicket(userTicketId)
+      .then(() => {
+        setMsg('RSVP cancelled.');
+        setHasTicket(false);
+        setUserTicketId(null);
+      })
+      .catch((e) => setErr(e?.response?.data?.message || 'Failed to cancel'));
   };
 
   return (
@@ -94,8 +125,13 @@ export default function EventDetail() {
               </button>
             </>
           ) : (
-            <div className="subtle" style={{ marginLeft: 8 }}>
-              Already RSVP'd
+            <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+              <div className="subtle" style={{ marginLeft: 8 }}>
+                Already RSVP'd
+              </div>
+              <button className="btn muted" onClick={onCancel}>
+                Cancel RSVP
+              </button>
             </div>
           )}
         </div>

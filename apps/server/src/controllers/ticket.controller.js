@@ -14,6 +14,12 @@ exports.rsvp = async (req, res, next) => {
     if (!ev || ev.status !== 'published')
       return res.status(400).json({ message: 'Event not available' });
 
+    // if a ticket exists for this user+event, handle based on status
+    const existing = await Ticket.findOne({
+      event: eventId,
+      user: req.user.id,
+    });
+    // compute desired status considering capacity
     const countActive = await Ticket.countDocuments({
       event: eventId,
       status: { $in: ['active', 'checked_in'] },
@@ -21,6 +27,21 @@ exports.rsvp = async (req, res, next) => {
     let status = 'active';
     if (countActive >= ev.capacity)
       status = ev.allowWaitlist ? 'waitlisted' : 'cancelled';
+
+    if (existing) {
+      if (existing.status === 'cancelled') {
+        // reactivate the cancelled ticket
+        existing.status = status;
+        existing.issuedAt = Date.now();
+        // sign payload again (refresh QR)
+        const signed = sign(basePayload(eventId, existing._id.toString()));
+        existing.qrCode = signed;
+        await existing.save();
+        return res.status(200).json({ ticketId: existing._id, status });
+      }
+      // already have a non-cancelled ticket
+      return res.status(409).json({ message: 'Already RSVP’d' });
+    }
 
     const ticket = await Ticket.create({
       event: eventId,
@@ -44,10 +65,11 @@ exports.rsvp = async (req, res, next) => {
 
 exports.mine = async (req, res, next) => {
   try {
-    const tickets = await Ticket.find({ user: req.user.id }).populate(
-      'event',
-      'title startAt venue status'
-    );
+    // return only non-cancelled tickets so cancelled RSVPs don't appear
+    const tickets = await Ticket.find({
+      user: req.user.id,
+      status: { $ne: 'cancelled' },
+    }).populate('event', 'title startAt venue status');
     res.json(tickets);
   } catch (e) {
     next(e);

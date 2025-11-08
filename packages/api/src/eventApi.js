@@ -18,3 +18,6 @@ export const ticketQR = (ticketId) =>
   http
     .get(`/tickets/${ticketId}/qr`, { responseType: 'blob' })
     .then((r) => r.data);
+
+export const cancelTicket = (ticketId) =>
+  http.post(`/tickets/${ticketId}/cancel`).then((r) => r.data);
