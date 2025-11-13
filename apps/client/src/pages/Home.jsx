@@ -3,6 +3,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { listEvents, rsvp, myTickets } from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
 import ApiStatus from '../components/ApiStatus';
+import Modal from '../components/Modal';
+import { useToast } from '../components/Toast';
 
 function EventCard({ ev, onRSVP, hasTicket, rsvpLoading }) {
   const dt = new Date(ev.startAt);
@@ -53,6 +55,9 @@ export default function Home() {
   const [q, setQ] = useState('');
   const [err, setErr] = useState('');
   const [rsvpLoading, setRsvpLoading] = useState(new Set());
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmEvent, setConfirmEvent] = useState(null);
+  const { push: pushToast } = useToast();
   const { auth } = useContext(AuthContext);
   const nav = useNavigate();
   const location = useLocation();
@@ -107,10 +112,13 @@ export default function Home() {
       });
       return;
     }
+    // open confirmation modal instead of window.confirm
+    setConfirmEvent(ev);
+    setConfirmOpen(true);
+  };
 
-    // confirm before sending request
-    if (!window.confirm(`RSVP to "${ev.title}"?`)) return;
-
+  const doRSVP = async (ev) => {
+    setConfirmOpen(false);
     try {
       setRsvpLoading((s) => new Set([...Array.from(s), ev._id]));
       const res = await rsvp(ev._id);
@@ -121,6 +129,7 @@ export default function Home() {
       });
       if (res && res.status) {
         setTicketSet((s) => new Set([...Array.from(s), ev._id]));
+        pushToast({ type: 'success', message: `RSVP confirmed for "${ev.title}"` });
       }
     } catch (e) {
       setRsvpLoading((s) => {
@@ -135,7 +144,9 @@ export default function Home() {
         });
         return;
       }
-      setErr(e?.response?.data?.message || 'Failed to RSVP');
+      const msg = e?.response?.data?.message || 'Failed to RSVP';
+      setErr(msg);
+      pushToast({ type: 'error', message: msg });
     }
   };
 
@@ -207,6 +218,16 @@ export default function Home() {
           ))}
         </div>
       )}
+
+      <Modal open={confirmOpen} title={confirmEvent ? `RSVP to "${confirmEvent.title}"` : 'RSVP'} onClose={() => setConfirmOpen(false)}>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+          <div>Are you sure you want to RSVP to this event?</div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn secondary" onClick={() => setConfirmOpen(false)}>Cancel</button>
+            <button className="btn" onClick={() => confirmEvent && doRSVP(confirmEvent)}>Confirm</button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
