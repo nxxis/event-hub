@@ -6,7 +6,7 @@
   --card: #ffffff; /* cards */
   --elev: #f0f6f8; /* elevated surface */
   --text: #07122a; /* primary text */
-  --muted: #6b7280; /* secondary text */
+  --muted: #475569; /* stronger secondary text for better contrast */
   --primary: #06b6d4; /* teal */
   --primary-strong: #7c3aed; /* vivid purple */
   --accent-gradient: linear-gradient(135deg, #06b6d4 0%, #7c3aed 100%);
@@ -153,6 +153,7 @@ body {
 }
 .subtle {
   color: var(--muted);
+  font-weight: 500;
 }
 
 /* ===== Controls ===== */
@@ -169,6 +170,11 @@ body {
   border-radius: 12px;
   padding: 12px 14px;
   outline: none;
+}
+
+.input::placeholder {
+  color: var(--muted);
+  opacity: 1;
 }
 .input:focus {
   border-color: var(--primary);
