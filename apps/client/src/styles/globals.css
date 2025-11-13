@@ -382,7 +382,8 @@ body {
 .hero-right { width: 540px; }
 .hero-frame { background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.12)); border-radius: 12px; padding: 14px; }
 .device-frame { border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 20px 60px rgba(7,18,42,0.25); }
-.device-screen { height: 180px; border-radius: 10px; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.15); }
+.device-screen { height: 180px; border-radius: 10px; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.15); overflow: hidden; }
+.device-screen img { display:block; width:100%; height:100%; object-fit:cover; }
 .device-thumbs { display:flex; gap:8px; margin-top:10px; }
 .thumb { flex:1 1 0; height: 110px; border-radius:8px; background-size:cover; background-position:center; border: 1px solid rgba(255,255,255,0.06); }
 .thumb.small { height: 68px; }

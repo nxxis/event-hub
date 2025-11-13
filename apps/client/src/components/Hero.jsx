@@ -42,7 +42,13 @@ export default function Hero({ featured, others = [], onJoin }) {
 
         <div className="hero-right">
           <div className="hero-frame device-frame">
-            <div className="device-screen" style={{ backgroundImage: `url(${featured?.cover || bg})` }} />
+            <div className="device-screen">
+              <img
+                src={featured?.cover || bg}
+                alt={featured?.title || 'Featured'}
+                style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 10 }}
+              />
+            </div>
             <div className="device-thumbs">
               {others.slice(0, 4).map((o) => (
                 <div
