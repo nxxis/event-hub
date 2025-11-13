@@ -2,8 +2,9 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { listEvents, rsvp, myTickets } from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
+import ApiStatus from '../components/ApiStatus';
 
-function EventCard({ ev, onRSVP, hasTicket }) {
+function EventCard({ ev, onRSVP, hasTicket, rsvpLoading }) {
   const dt = new Date(ev.startAt);
   const day = dt.toLocaleDateString(undefined, {
     month: 'short',
@@ -32,8 +33,10 @@ function EventCard({ ev, onRSVP, hasTicket }) {
               e.preventDefault();
               onRSVP(ev);
             }}
+            aria-label={`RSVP to ${ev.title}`}
+            disabled={rsvpLoading}
           >
-            RSVP
+            {rsvpLoading ? 'Sending…' : 'RSVP'}
           </button>
         ) : (
           <button className="btn secondary" type="button">
@@ -49,6 +52,7 @@ export default function Home() {
   const [items, setItems] = useState(null);
   const [q, setQ] = useState('');
   const [err, setErr] = useState('');
+  const [rsvpLoading, setRsvpLoading] = useState(new Set());
   const { auth } = useContext(AuthContext);
   const nav = useNavigate();
   const location = useLocation();
@@ -56,12 +60,23 @@ export default function Home() {
   const [ticketsLoaded, setTicketsLoaded] = useState(false);
 
   useEffect(() => {
+    let alive = true;
+    setErr('');
     setItems(null);
-    listEvents(q ? { search: q } : {})
-      .then(setItems)
-      .catch((e) =>
-        setErr(e?.response?.data?.message || 'Failed to load events')
-      );
+    (async () => {
+      try {
+        const data = await listEvents(q ? { search: q } : {});
+        if (!alive) return;
+        setItems(data);
+      } catch (e) {
+        if (!alive) return;
+        setErr(e?.response?.data?.message || 'Failed to load events');
+        setItems([]);
+      }
+    })();
+    return () => {
+      alive = false;
+    };
   }, [q]);
 
   useEffect(() => {
@@ -97,11 +112,22 @@ export default function Home() {
     if (!window.confirm(`RSVP to "${ev.title}"?`)) return;
 
     try {
+      setRsvpLoading((s) => new Set([...Array.from(s), ev._id]));
       const res = await rsvp(ev._id);
+      setRsvpLoading((s) => {
+        const copy = new Set(s);
+        copy.delete(ev._id);
+        return copy;
+      });
       if (res && res.status) {
         setTicketSet((s) => new Set([...Array.from(s), ev._id]));
       }
     } catch (e) {
+      setRsvpLoading((s) => {
+        const copy = new Set(s);
+        copy.delete(ev._id);
+        return copy;
+      });
       // if not authenticated, redirect to login with message (fallback)
       if (e?.response?.status === 401) {
         nav('/login', {
@@ -126,6 +152,9 @@ export default function Home() {
 
   return (
     <div className="stack">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <ApiStatus />
+      </div>
       <div className="card">
         <div className="h1">Discover events</div>
         <div className="subtle">Browse & RSVP to upcoming campus events.</div>
@@ -144,7 +173,12 @@ export default function Home() {
 
       {err && (
         <div className="card" style={{ color: '#ffb4b4' }}>
-          Error: {err}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div>Error: {err}</div>
+            <button className="btn small" onClick={() => setQ(q)}>
+              Retry
+            </button>
+          </div>
         </div>
       )}
 
@@ -168,6 +202,7 @@ export default function Home() {
               ev={ev}
               hasTicket={ticketSet.has(ev._id)}
               onRSVP={handleRSVP}
+              rsvpLoading={rsvpLoading.has(ev._id)}
             />
           ))}
         </div>

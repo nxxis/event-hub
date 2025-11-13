@@ -25,71 +25,40 @@ export default function Login() {
   };
 
   return (
-    <div className="grid">
-      <div className="col-8">
-        <div className="card">
-          <div className="h1">Welcome back</div>
-          <div className="subtle">Sign in to RSVP and view your tickets.</div>
-          <form
-            className="stack mt-2"
-            onSubmit={submit}
-            style={{ maxWidth: 420 }}
-          >
-            <input
-              className="input"
-              type="email"
-              placeholder="Email"
-              required
-              value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-            />
-            <input
-              className="input"
-              type="password"
-              placeholder="Password"
-              required
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-            />
-            <div className="row">
-              <button className="btn" type="submit">
-                Sign in
-              </button>
-              <button
-                className="btn ghost"
-                type="button"
-                onClick={() =>
-                  setForm({
-                    email: 'student@demo.com',
-                    password: 'Student123!',
-                  })
-                }
-              >
-                Fill demo creds
-              </button>
+    <div className="center-page">
+      <div className="card" style={{ maxWidth: 920, width: '95%', display: 'flex', gap: 18, alignItems: 'stretch' }}>
+        <div style={{ flex: 1, padding: 28, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 60, height: 60 }}>
+              {/* inline logo */}
+              <img src="/logo192.png" alt="logo" style={{ width: '100%', height: '100%' }} onError={(e)=>{e.currentTarget.style.display='none'}} />
             </div>
-            {err && <div style={{ color: '#ffb4b4' }}>{err}</div>}
-          </form>
-        </div>
-      </div>
-      <div className="col-4">
-        <div
-          className="card"
-          style={{
-            height: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          <div>
-            <div className="brand" style={{ fontSize: 22 }}>
-              <span className="brand-badge" /> EventHub
-            </div>
-            <div className="subtle mt-1">
-              Campus events. Simple RSVPs. Fast check-ins.
+            <div>
+              <div className="brand" style={{ fontSize: 22 }}>
+                <span className="brand-badge" /> EventHub
+              </div>
+              <div className="subtle mt-1">Campus events. Simple RSVPs. Fast check-ins.</div>
             </div>
           </div>
+          <div style={{ marginTop: 10, color: 'var(--muted)' }}>Join campus events, RSVP quickly and manage your tickets.</div>
+        </div>
+
+        <div style={{ flex: 1, padding: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <form className="stack" onSubmit={submit} style={{ width: '100%', maxWidth: 420 }}>
+            <div className="h1">Welcome back</div>
+            <div className="subtle">Sign in to RSVP and view your tickets.</div>
+            <div className="mt-2">
+              <input className="input" type="email" placeholder="Email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div>
+              <input className="input" type="password" placeholder="Password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            </div>
+            <div className="row mt-2">
+              <button className="btn" type="submit">Sign in</button>
+              <button className="btn ghost" type="button" onClick={() => setForm({ email: 'student@demo.com', password: 'Student123!' })}>Fill demo creds</button>
+            </div>
+            {err && <div style={{ color: '#d9534f' }}>{err}</div>}
+          </form>
         </div>
       </div>
     </div>
