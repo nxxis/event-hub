@@ -1,9 +1,10 @@
 import React from 'react';
 
 export default function Logo({ size = 36 }) {
-  const primary = 'var(--primary)';
-  const secondary = 'var(--primary-strong)';
-  const dark = 'var(--text)';
+  // Use a bold two-stop gradient for the logo that matches theme
+  const primaryHex = '#06b6d4';
+  const secondaryHex = '#7c3aed';
+  const dark = '#07122a';
   return (
     <svg
       width={size}
@@ -13,13 +14,13 @@ export default function Logo({ size = 36 }) {
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      <rect width="64" height="64" rx="12" fill="url(#g)" />
       <defs>
         <linearGradient id="g" x1="0" x2="1">
-          <stop offset="0" stopColor={primary} />
-          <stop offset="1" stopColor={secondary} />
+          <stop offset="0" stopColor={primaryHex} />
+          <stop offset="1" stopColor={secondaryHex} />
         </linearGradient>
       </defs>
+      <rect width="64" height="64" rx="12" fill="url(#g)" />
       <g transform="translate(8,8)">
         <circle cx="24" cy="24" r="18" fill="rgba(255,255,255,0.12)" />
         <path
