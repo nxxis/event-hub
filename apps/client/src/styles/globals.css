@@ -359,6 +359,36 @@ body {
   }
 }
 
+/* Hero styles */
+.hero {
+  background-size: cover;
+  background-position: center;
+  padding: 56px 0;
+  color: #fff;
+}
+.hero-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+.hero-left { flex: 1; }
+.hero-pre { font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.85); margin-bottom: 12px; }
+.hero-title { font-size: 44px; margin: 0 0 8px; color: #fff; text-shadow: 0 8px 30px rgba(7,18,42,0.6); }
+.hero-meta { color: rgba(255,255,255,0.85); margin-bottom: 18px; }
+.hero-cta { display:flex; gap: 12px; }
+.hero-right { width: 540px; }
+.hero-frame { background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.25)); border-radius: 10px; padding: 18px; box-shadow: 0 20px 60px rgba(7,18,42,0.45); }
+.hero-thumb-grid { display:flex; gap:8px; }
+.thumb { flex:1 1 0; height: 110px; border-radius:8px; background-size:cover; background-position:center; border: 1px solid rgba(255,255,255,0.06); }
+
+@media (max-width: 900px) {
+  .hero-inner { flex-direction: column; }
+  .hero-right { width: 100%; }
+  .hero-title { font-size: 28px; }
+}
+
 /* center a card in the viewport */
 .center-page {
   min-height: calc(100vh - 72px);

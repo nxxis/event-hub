@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { listEvents, rsvp, myTickets } from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
 import ApiStatus from '../components/ApiStatus';
+import Hero from '../components/Hero';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
 
@@ -166,6 +167,13 @@ export default function Home() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <ApiStatus />
       </div>
+      {items && items.length > 0 && (
+        <Hero
+          featured={items[0]}
+          others={items.slice(1, 6)}
+          onJoin={(ev) => handleRSVP(ev)}
+        />
+      )}
       <div className="card">
         <div className="h1">Discover events</div>
         <div className="subtle">Browse & RSVP to upcoming campus events.</div>
