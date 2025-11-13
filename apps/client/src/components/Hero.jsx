@@ -7,7 +7,7 @@ export default function Hero({ featured, others = [], onJoin }) {
   return (
     <section
       className="hero hero-large"
-      style={{ backgroundImage: `linear-gradient(rgba(7,12,30,0.55), rgba(7,12,30,0.55)), url(${bg})` }}
+      style={{ backgroundImage: `linear-gradient(rgba(7,12,30,0.6), rgba(7,12,30,0.6)), url(${bg})` }}
     >
       <div className="hero-inner">
         <div className="hero-left">
@@ -16,13 +16,10 @@ export default function Hero({ featured, others = [], onJoin }) {
           <p className="hero-sub">{featured?.description || 'Join our featured event and connect with peers, speakers, and sponsors.'}</p>
           <div className="hero-meta">{featured?.organisation?.name || 'EventHub'} • {new Date(featured?.startAt || Date.now()).toLocaleString()}</div>
           <div className="hero-cta">
-            <button className="btn" onClick={() => onJoin && onJoin(featured)}>
+            <button className="btn primary-large" onClick={() => onJoin && onJoin(featured)}>
               Join Event
             </button>
-            <button
-              className="btn secondary"
-              onClick={() => window.scrollTo({ top: 700, behavior: 'smooth' })}
-            >
+            <button className="btn secondary" onClick={() => window.scrollTo({ top: 700, behavior: 'smooth' })}>
               View schedule
             </button>
           </div>
@@ -44,15 +41,14 @@ export default function Hero({ featured, others = [], onJoin }) {
         </div>
 
         <div className="hero-right">
-          <div className="hero-frame">
-            <div className="hero-thumb-grid">
+          <div className="hero-frame device-frame">
+            <div className="device-screen" style={{ backgroundImage: `url(${featured?.cover || bg})` }} />
+            <div className="device-thumbs">
               {others.slice(0, 4).map((o) => (
                 <div
                   key={o._id}
-                  className="thumb"
-                  style={{
-                    backgroundImage: `url(${o.cover || 'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=800&q=60'})`,
-                  }}
+                  className="thumb small"
+                  style={{ backgroundImage: `url(${o.cover || bg})` }}
                   title={o.title}
                 />
               ))}
