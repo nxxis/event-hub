@@ -3,6 +3,7 @@ const Ticket = require('../models/ticket.model');
 const mongoose = require('mongoose');
 
 const { createEvent } = require('ics');
+const axios = require('axios');
 
 exports.ics = async (req, res, next) => {
   try {
@@ -142,6 +143,65 @@ exports.remove = async (req, res, next) => {
     const ok = await Event.findByIdAndDelete(req.params.id);
     if (!ok) return res.status(404).json({ message: 'Event not found' });
     res.json({ message: 'Deleted' });
+  } catch (e) {
+    next(e);
+  }
+};
+
+// Generate or return images for the event. If OPENAI_API_KEY is present the server
+// will attempt to generate images using the OpenAI Image API. Otherwise we return
+// seeded Picsum.photos URLs as a fallback so the frontend always gets usable images.
+exports.images = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid event id' });
+    }
+
+    const ev = await Event.findById(id).populate('organisation', 'name');
+    if (!ev) return res.status(404).json({ message: 'Event not found' });
+
+    // determine prompt from the event data
+    const promptParts = [ev.title, ev.description, ev.tags && ev.tags.join(', '), ev.organisation?.name];
+    const prompt = `Hero-style photograph for an event: ${promptParts.filter(Boolean).join(' • ')} — bright, modern, high-resolution, people at an event, stage, banners, natural lighting.`;
+
+    // If an OpenAI key is provided, attempt to generate images (n=3)
+    if (process.env.OPENAI_API_KEY) {
+      try {
+        const url = 'https://api.openai.com/v1/images/generations';
+        const payload = {
+          model: 'gpt-image-1',
+          prompt,
+          n: 3,
+          size: '1024x1024',
+        };
+        const resp = await axios.post(url, payload, {
+          headers: {
+            Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          timeout: 60000,
+        });
+
+        // The image API may return data or urls depending on provider. Normalize to an array of URLs.
+        const images = [];
+        if (resp.data && resp.data.data) {
+          for (const item of resp.data.data) {
+            if (item.url) images.push(item.url);
+            else if (item.b64_json) images.push(`data:image/png;base64,${item.b64_json}`);
+          }
+        }
+        if (images.length) return res.json({ images });
+      } catch (err) {
+        // fall through to fallback below but log the error for dev visibility
+        console.error('OpenAI image generation failed:', err.message || err);
+      }
+    }
+
+    // Fallback: return seeded picsum.photos images using event id as seed so results are stable
+    const seedBase = ev._id.toString().slice(-8);
+    const fallback = [600, 800, 400].map((w, i) => `https://picsum.photos/seed/${encodeURIComponent(seedBase + i)}/${w}/600`);
+    res.json({ images: fallback });
   } catch (e) {
     next(e);
   }
