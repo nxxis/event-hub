@@ -17,7 +17,38 @@ http.interceptors.request.use((config) => {
     const token = localStorage.getItem('token');
     if (token) config.headers.Authorization = `Bearer ${token}`;
   }
+  // notify global network activity (increment)
+  try {
+    if (typeof window !== 'undefined') {
+      window.__activeNetworkRequests = (window.__activeNetworkRequests || 0) + 1;
+      window.dispatchEvent(new CustomEvent('network:count', { detail: { count: window.__activeNetworkRequests } }));
+    }
+  } catch (e) {
+    // ignore
+  }
   return config;
 });
+
+// decrement on response or error
+http.interceptors.response.use(
+  (response) => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.__activeNetworkRequests = Math.max(0, (window.__activeNetworkRequests || 1) - 1);
+        window.dispatchEvent(new CustomEvent('network:count', { detail: { count: window.__activeNetworkRequests } }));
+      }
+    } catch (e) {}
+    return response;
+  },
+  (error) => {
+    try {
+      if (typeof window !== 'undefined') {
+        window.__activeNetworkRequests = Math.max(0, (window.__activeNetworkRequests || 1) - 1);
+        window.dispatchEvent(new CustomEvent('network:count', { detail: { count: window.__activeNetworkRequests } }));
+      }
+    } catch (e) {}
+    return Promise.reject(error);
+  }
+);
 
 export default http;

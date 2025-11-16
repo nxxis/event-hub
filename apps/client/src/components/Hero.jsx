@@ -62,18 +62,22 @@ export default function Hero({ featured, others = [], onJoin }) {
           </div>
 
           <div className="hero-stats">
-            <div className="stat">
+            <div className="stat" aria-hidden={!(featured?.capacity)}>
               <div className="stat-num">{featured?.capacity ?? 0}</div>
-              <div className="stat-label">Capacity</div>
+              <div className="stat-label">{(featured?.capacity ?? 0) === 1 ? 'seat' : 'seats'}</div>
             </div>
-            <div className="stat">
+
+            <div className="stat" aria-hidden={!(others && others.length)}>
               <div className="stat-num">{others.length}</div>
-              <div className="stat-label">More sessions</div>
+              <div className="stat-label">{others.length === 1 ? 'more session' : 'more sessions'}</div>
             </div>
-            <div className="stat">
-              <div className="stat-num">{featured?.tags?.length || 0}</div>
-              <div className="stat-label">Tags</div>
-            </div>
+
+            {((featured?.tags?.length) || 0) > 0 && (
+              <div className="stat">
+                <div className="stat-num">{featured?.tags?.length || 0}</div>
+                <div className="stat-label">{(featured?.tags?.length || 0) === 1 ? 'tag' : 'tags'}</div>
+              </div>
+            )}
           </div>
         </div>
 

@@ -161,10 +161,108 @@ exports.images = async (req, res, next) => {
     const ev = await Event.findById(id).populate('organisation', 'name');
     if (!ev) return res.status(404).json({ message: 'Event not found' });
 
-    // build prompt from event
-    const promptParts = [ev.title, ev.description, ev.tags && ev.tags.join(', '), ev.organisation?.name];
-    const prompt = `Hero-style photograph for an event: ${promptParts.filter(Boolean).join(' • ')} — bright, modern, high-resolution, people at an event, stage, banners, natural lighting.`;
+    // If images were previously generated and stored, return cached images first
+    if (ev.images && Array.isArray(ev.images) && ev.images.length) {
+      return res.json({ images: ev.images });
+    }
 
+    // Delegate to generator logic (same used by regenerate endpoint)
+    async function generateAndSaveImages(forceStyle) {
+      const parts = [];
+      if (ev.title) parts.push(ev.title);
+      if (ev.description) parts.push(ev.description.substring(0, 200));
+      if (ev.tags && ev.tags.length) parts.push(ev.tags.join(', '));
+      if (ev.organisation && ev.organisation.name) parts.push(ev.organisation.name);
+      const content = parts.filter(Boolean).join(' • ');
+      const style = forceStyle || ev.imageStyle || 'photorealistic';
+      const styleNote = style === 'illustration' ? 'illustration style, vector-friendly, clean shapes' : style === 'cinematic' ? 'cinematic, dramatic lighting, film look' : 'photorealistic';
+      const prompt = `Create a high-quality, hero-style ${style} image for an event described as: ${content}. Style notes: ${styleNote}. Focus on people and activity that represent the event. No logos or watermarks. Provide images suitable for website hero banners (16:9).`;
+
+      if (process.env.OPENAI_API_KEY) {
+        try {
+          const url = 'https://api.openai.com/v1/images/generations';
+          const payload = {
+            model: 'gpt-image-1',
+            prompt,
+            n: 3,
+            size: '1024x1024',
+          };
+          const resp = await axios.post(url, payload, {
+            headers: {
+              Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json',
+            },
+            timeout: 60000,
+          });
+
+          const images = [];
+          if (resp.data && resp.data.data) {
+            for (const item of resp.data.data) {
+              if (item.url) images.push(item.url);
+              else if (item.b64_json) images.push(`data:image/png;base64,${item.b64_json}`);
+            }
+          }
+
+          if (images.length) {
+            try {
+              ev.images = images;
+              await ev.save();
+            } catch (saveErr) {
+              console.warn('Failed to save generated images on event:', saveErr.message || saveErr);
+            }
+            return images;
+          }
+        } catch (err) {
+          console.error('OpenAI image generation failed:', err.message || err);
+        }
+      }
+
+      // Fallback
+      const seedBase = ev._id.toString().slice(-8);
+      const fallback = [1200, 900, 600].map((w, i) => `https://picsum.photos/seed/${encodeURIComponent(seedBase + '-' + i)}/${w}/600`);
+      try {
+        ev.images = fallback;
+        await ev.save();
+      } catch (saveErr) {
+        console.warn('Failed to save fallback images on event:', saveErr.message || saveErr);
+      }
+      return fallback;
+    }
+
+    const images = await generateAndSaveImages();
+    res.json({ images });
+  } catch (e) {
+    next(e);
+  }
+};
+
+// Force regenerate images for an event (admin/organiser only)
+exports.regenerateImages = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(id)) {
+      return res.status(400).json({ message: 'Invalid event id' });
+    }
+    const ev = await Event.findById(id).populate('organisation', 'name');
+    if (!ev) return res.status(404).json({ message: 'Event not found' });
+
+    // Clear existing images and generate new ones using the event's imageStyle
+    ev.images = [];
+    await ev.save();
+
+    // reuse generation logic from images handler by calling generateAndSaveImages via local copy
+    // implement inline generation similar to above
+    const parts = [];
+    if (ev.title) parts.push(ev.title);
+    if (ev.description) parts.push(ev.description.substring(0, 200));
+    if (ev.tags && ev.tags.length) parts.push(ev.tags.join(', '));
+    if (ev.organisation && ev.organisation.name) parts.push(ev.organisation.name);
+    const content = parts.filter(Boolean).join(' • ');
+    const style = ev.imageStyle || 'photorealistic';
+    const styleNote = style === 'illustration' ? 'illustration style, vector-friendly, clean shapes' : style === 'cinematic' ? 'cinematic, dramatic lighting, film look' : 'photorealistic';
+    const prompt = `Create a high-quality, hero-style ${style} image for an event described as: ${content}. Style notes: ${styleNote}. Focus on people and activity that represent the event. No logos or watermarks. Provide images suitable for website hero banners (16:9).`;
+
+    let images = [];
     if (process.env.OPENAI_API_KEY) {
       try {
         const url = 'https://api.openai.com/v1/images/generations';
@@ -181,23 +279,28 @@ exports.images = async (req, res, next) => {
           },
           timeout: 60000,
         });
-
-        const images = [];
         if (resp.data && resp.data.data) {
           for (const item of resp.data.data) {
             if (item.url) images.push(item.url);
             else if (item.b64_json) images.push(`data:image/png;base64,${item.b64_json}`);
           }
         }
-        if (images.length) return res.json({ images });
       } catch (err) {
-        console.error('OpenAI image generation failed:', err.message || err);
+        console.error('OpenAI image generation failed (regenerate):', err.message || err);
       }
     }
+    if (!images.length) {
+      const seedBase = ev._id.toString().slice(-8);
+      images = [1200, 900, 600].map((w, i) => `https://picsum.photos/seed/${encodeURIComponent(seedBase + '-' + i)}/${w}/600`);
+    }
 
-    const seedBase = ev._id.toString().slice(-8);
-    const fallback = [600, 800, 400].map((w, i) => `https://picsum.photos/seed/${encodeURIComponent(seedBase + i)}/${w}/600`);
-    res.json({ images: fallback });
+    try {
+      ev.images = images;
+      await ev.save();
+    } catch (saveErr) {
+      console.warn('Failed to save regenerated images on event:', saveErr.message || saveErr);
+    }
+    res.json({ images });
   } catch (e) {
     next(e);
   }

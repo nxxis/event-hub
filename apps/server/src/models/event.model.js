@@ -28,6 +28,8 @@ const EventSchema = new mongoose.Schema(
       index: true,
     },
     tags: [{ type: String }],
+  imageStyle: { type: String, enum: ['photorealistic', 'illustration', 'cinematic'], default: 'photorealistic' },
+    images: [{ type: String }],
   },
   { timestamps: true }
 );
