@@ -3,6 +3,7 @@ import http from './http.js';
 export const listEvents = (params = {}) =>
   http.get('/events', { params }).then((r) => r.data);
 export const getEvent = (id) => http.get(`/events/${id}`).then((r) => r.data);
+export const getEventImages = (id) => http.get(`/events/${id}/images`).then((r) => r.data);
 
 export const signup = (payload) =>
   http.post('/auth/signup', payload).then((r) => r.data);

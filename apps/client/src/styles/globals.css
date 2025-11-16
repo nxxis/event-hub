@@ -397,6 +397,8 @@ body {
 .device-thumbs { display:flex; gap:8px; margin-top:10px; }
 .thumb { flex:1 1 0; height: 110px; border-radius:8px; background-size:cover; background-position:center; border: 1px solid rgba(255,255,255,0.04); }
 .thumb.small { height: 68px; }
+.thumb.active { box-shadow: 0 6px 18px rgba(124,58,237,0.08); transform: translateY(-4px); border: 2px solid var(--primary-strong); }
+.device-screen img { transition: opacity .35s ease; }
 
 .hero-stats { display:flex; gap: 18px; margin-top: 20px; }
 .stat { background: rgba(255,255,255,0.06); padding: 8px 12px; border-radius: 8px; }
