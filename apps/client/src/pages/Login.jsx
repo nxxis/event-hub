@@ -26,8 +26,8 @@ export default function Login() {
 
   return (
     <div className="center-page">
-      <div className="card" style={{ maxWidth: 920, width: '95%', display: 'flex', gap: 18, alignItems: 'stretch' }}>
-        <div style={{ flex: 1, padding: 28, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+      <div className="card card--login" style={{ maxWidth: 920, width: '95%' }}>
+        <div className="login-left" style={{ flex: 1 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{ width: 60, height: 60 }}>
               {/* inline logo */}
@@ -43,7 +43,7 @@ export default function Login() {
           <div style={{ marginTop: 10, color: 'var(--muted)' }}>Join campus events, RSVP quickly and manage your tickets.</div>
         </div>
 
-        <div style={{ flex: 1, padding: 28, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div className="login-right" style={{ flex: 1 }}>
           <form className="stack" onSubmit={submit} style={{ width: '100%', maxWidth: 420 }}>
             <div className="h1">Welcome back</div>
             <div className="subtle">Sign in to RSVP and view your tickets.</div>
