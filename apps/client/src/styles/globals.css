@@ -1,4 +1,21 @@
 /* ===== Theme & tokens ===== */
+/* Quick theme override class — applied at runtime to force the bright palette */
+html.theme-bright {
+  --bg: #f3fbff;
+  --panel: #ffffff;
+  --card: #ffffff;
+  --elev: #f7fbff;
+  --text: #07122a;
+  --muted: #4b5563;
+  --primary: #00d0ff;
+  --primary-strong: #ff3eb8;
+  --accent-gradient: linear-gradient(135deg,#00d0ff 0%, #ff3eb8 100%);
+  --ring: rgba(124, 58, 237, 0.14);
+  --border: #e6eef3;
+  --radius: 12px;
+  --shadow: 0 12px 36px rgba(12, 38, 63, 0.08);
+}
+
 :root {
   /* Brighter, high-energy theme tokens */
   --bg: #f3fbff; /* slightly cooler page background */
