@@ -65,13 +65,14 @@ body {
 
 /* ===== Surfaces ===== */
 .nav {
-  position: absolute;
+  position: sticky;
   top: 0;
   left: 0;
   right: 0;
   z-index: 40;
   padding-top: 12px;
-  background: transparent;
+  background: rgba(255,255,255,0.95);
+  box-shadow: 0 6px 24px rgba(12,38,63,0.04);
 }
 .nav-inner {
   display: flex;
@@ -103,11 +104,20 @@ body {
   flex: 1;
 }
 .nav a {
-  color: #ffffff;
+  color: var(--text);
   text-decoration: none;
   font-weight: 600;
 }
-.nav a:hover { color: #fff; }
+.nav a:hover { color: var(--primary-strong); }
+.nav--scrolled {
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 6px 24px rgba(12, 38, 63, 0.06);
+}
+.nav--scrolled .brand { color: var(--text); }
+.nav--scrolled a { color: var(--text); }
 
 .card {
   background: var(--card);
@@ -360,10 +370,10 @@ body {
 
 /* Hero styles */
 .hero {
-  background-size: cover;
-  background-position: center;
+  /* use the site's light page background for the hero area now so the framed device image is the focus */
+  background: linear-gradient(180deg, var(--bg) 0%, #ffffff 100%);
   padding: 56px 0;
-  color: #fff;
+  color: var(--text);
 }
 .hero-large { min-height: 520px; }
 .hero-inner {
@@ -374,18 +384,18 @@ body {
   align-items: center;
 }
 .hero-left { flex: 1; }
-.hero-pre { font-weight: 800; letter-spacing: 1px; color: rgba(255,255,255,0.85); margin-bottom: 12px; }
-.hero-title { font-size: 48px; margin: 0 0 8px; color: #fff; text-shadow: 0 12px 40px rgba(7,18,42,0.6); line-height:1.02 }
-.hero-sub { color: rgba(255,255,255,0.9); max-width: 560px; margin-bottom: 8px; }
-.hero-meta { color: rgba(255,255,255,0.85); margin-bottom: 18px; }
+.hero-pre { font-weight: 800; letter-spacing: 1px; color: var(--muted); margin-bottom: 12px; }
+.hero-title { font-size: 48px; margin: 0 0 8px; color: var(--text); line-height:1.02 }
+.hero-sub { color: var(--muted); max-width: 560px; margin-bottom: 8px; }
+.hero-meta { color: var(--muted); margin-bottom: 18px; }
 .hero-cta { display:flex; gap: 12px; }
 .hero-right { width: 540px; }
-.hero-frame { background: linear-gradient(180deg, rgba(0,0,0,0.2), rgba(0,0,0,0.12)); border-radius: 12px; padding: 14px; }
-.device-frame { border: 1px solid rgba(255,255,255,0.06); box-shadow: 0 20px 60px rgba(7,18,42,0.25); }
-.device-screen { height: 180px; border-radius: 10px; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.15); overflow: hidden; }
+.hero-frame { background: transparent; border-radius: 12px; padding: 14px; }
+.device-frame { border: 1px solid rgba(12,38,63,0.06); box-shadow: 0 6px 18px rgba(12,38,63,0.06); background: linear-gradient(180deg, #ffffff, #fafcff); }
+.device-screen { height: 180px; border-radius: 10px; background-size: cover; background-position: center; border: 1px solid rgba(0,0,0,0.08); overflow: hidden; }
 .device-screen img { display:block; width:100%; height:100%; object-fit:cover; }
 .device-thumbs { display:flex; gap:8px; margin-top:10px; }
-.thumb { flex:1 1 0; height: 110px; border-radius:8px; background-size:cover; background-position:center; border: 1px solid rgba(255,255,255,0.06); }
+.thumb { flex:1 1 0; height: 110px; border-radius:8px; background-size:cover; background-position:center; border: 1px solid rgba(255,255,255,0.04); }
 .thumb.small { height: 68px; }
 
 .hero-stats { display:flex; gap: 18px; margin-top: 20px; }

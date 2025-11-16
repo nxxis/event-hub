@@ -5,10 +5,8 @@ export default function Hero({ featured, others = [], onJoin }) {
   const bg = featured?.cover || 'https://images.unsplash.com/photo-1503424886309-78a0b2b1b7f0?auto=format&fit=crop&w=1600&q=60';
 
   return (
-    <section
-      className="hero hero-large"
-      style={{ backgroundImage: `linear-gradient(rgba(7,12,30,0.6), rgba(7,12,30,0.6)), url(${bg})` }}
-    >
+    // removed the dark background overlay so the device image (and thumbnails) drive the visual.
+    <section className="hero hero-large">
       <div className="hero-inner">
         <div className="hero-left">
           <div className="hero-pre">UPCOMING EVENTS</div>
