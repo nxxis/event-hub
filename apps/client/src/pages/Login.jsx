@@ -28,19 +28,20 @@ export default function Login() {
     <div className="center-page">
       <div className="card card--login" style={{ maxWidth: 920, width: '95%' }}>
         <div className="login-left" style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 60, height: 60 }}>
-              {/* inline logo */}
-              <img src="/logo192.png" alt="logo" style={{ width: '100%', height: '100%' }} onError={(e)=>{e.currentTarget.style.display='none'}} />
-            </div>
-            <div>
-              <div className="brand" style={{ fontSize: 22 }}>
-                <span className="brand-badge" /> EventHub
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ width: 60, height: 60 }}>
+                <img src="/logo192.png" alt="logo" style={{ width: '100%', height: '100%' }} onError={(e)=>{e.currentTarget.style.display='none'}} />
               </div>
-              <div className="subtle mt-1">Campus events. Simple RSVPs. Fast check-ins.</div>
+              <div>
+                <div className="brand" style={{ fontSize: 22 }}>
+                  <span className="brand-badge" /> EventHub
+                </div>
+                <div className="subtle mt-1">Campus events. Simple RSVPs. Fast check-ins.</div>
+              </div>
             </div>
+            <div style={{ marginTop: 10, color: 'var(--muted)' }}>Join campus events, RSVP quickly and manage your tickets.</div>
           </div>
-          <div style={{ marginTop: 10, color: 'var(--muted)' }}>Join campus events, RSVP quickly and manage your tickets.</div>
         </div>
 
         <div className="login-right" style={{ flex: 1 }}>

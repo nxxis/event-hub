@@ -9,7 +9,6 @@ export default function Hero({ featured, others = [], onJoin }) {
   const timer = useRef(null);
 
   useEffect(() => {
-    // fetch images for the featured event
     let alive = true;
     async function load() {
       if (!featured?._id) return;
@@ -24,7 +23,6 @@ export default function Hero({ featured, others = [], onJoin }) {
           setImages([featured.cover].filter(Boolean));
         }
       } catch (e) {
-        // fallback to featured cover or generic image
         setImages([featured?.cover || fallback].filter(Boolean));
       } finally {
         if (alive) setLoadingImages(false);
@@ -37,7 +35,6 @@ export default function Hero({ featured, others = [], onJoin }) {
   }, [featured]);
 
   useEffect(() => {
-    // simple autoplay
     if (!images || images.length <= 1) return;
     timer.current = setInterval(() => {
       setIndex((i) => (i + 1) % images.length);

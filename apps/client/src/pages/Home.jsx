@@ -106,14 +106,12 @@ export default function Home() {
   }, [auth]);
 
   const handleRSVP = async (ev) => {
-    // if not logged in, redirect to login immediately (don't show confirm)
     if (!auth?.user) {
       nav('/login', {
         state: { message: 'You must login to RSVP', from: location.pathname },
       });
       return;
     }
-    // open confirmation modal instead of window.confirm
     setConfirmEvent(ev);
     setConfirmOpen(true);
   };
@@ -138,7 +136,6 @@ export default function Home() {
         copy.delete(ev._id);
         return copy;
       });
-      // if not authenticated, redirect to login with message (fallback)
       if (e?.response?.status === 401) {
         nav('/login', {
           state: { message: 'You must login to RSVP', from: location.pathname },

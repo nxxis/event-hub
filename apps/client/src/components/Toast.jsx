@@ -1,37 +1,31 @@
-import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
+import React, { createContext, useContext, useState, useCallback } from 'react';
 
-const ToastContext = createContext(null);
+const ToastCtx = createContext(null);
+
+export function useToast() {
+  return useContext(ToastCtx);
+}
 
 export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([]);
-
   const push = useCallback((t) => {
-    const id = Date.now() + Math.random();
+    const id = Math.random().toString(36).slice(2, 9);
     setToasts((s) => [...s, { id, ...t }]);
-    return id;
+    setTimeout(() => setToasts((s) => s.filter((x) => x.id !== id)), 4500);
   }, []);
-
-  const remove = useCallback((id) => {
-    setToasts((s) => s.filter((t) => t.id !== id));
-  }, []);
-
+  const remove = useCallback((id) => setToasts((s) => s.filter((t) => t.id !== id)), []);
   return (
-    <ToastContext.Provider value={{ push, remove }}>
+    <ToastCtx.Provider value={{ push, remove }}>
       {children}
-      <div className="toast-container" aria-live="polite">
+      <div className="toast-container">
         {toasts.map((t) => (
-          <div key={t.id} className={`toast ${t.type || 'info'}`} role="status">
+          <div key={t.id} className={`toast ${t.type || ''}`}>
             <div className="toast-message">{t.message}</div>
-            <button className="btn ghost small" onClick={() => remove(t.id)} aria-label="Dismiss">✕</button>
           </div>
         ))}
       </div>
-    </ToastContext.Provider>
+    </ToastCtx.Provider>
   );
 }
 
-export const useToast = () => {
-  const ctx = useContext(ToastContext);
-  if (!ctx) throw new Error('useToast must be used inside ToastProvider');
-  return ctx;
-};
+export default ToastProvider;

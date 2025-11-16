@@ -161,11 +161,10 @@ exports.images = async (req, res, next) => {
     const ev = await Event.findById(id).populate('organisation', 'name');
     if (!ev) return res.status(404).json({ message: 'Event not found' });
 
-    // determine prompt from the event data
+    // build prompt from event
     const promptParts = [ev.title, ev.description, ev.tags && ev.tags.join(', '), ev.organisation?.name];
     const prompt = `Hero-style photograph for an event: ${promptParts.filter(Boolean).join(' • ')} — bright, modern, high-resolution, people at an event, stage, banners, natural lighting.`;
 
-    // If an OpenAI key is provided, attempt to generate images (n=3)
     if (process.env.OPENAI_API_KEY) {
       try {
         const url = 'https://api.openai.com/v1/images/generations';
@@ -183,7 +182,6 @@ exports.images = async (req, res, next) => {
           timeout: 60000,
         });
 
-        // The image API may return data or urls depending on provider. Normalize to an array of URLs.
         const images = [];
         if (resp.data && resp.data.data) {
           for (const item of resp.data.data) {
@@ -193,12 +191,10 @@ exports.images = async (req, res, next) => {
         }
         if (images.length) return res.json({ images });
       } catch (err) {
-        // fall through to fallback below but log the error for dev visibility
         console.error('OpenAI image generation failed:', err.message || err);
       }
     }
 
-    // Fallback: return seeded picsum.photos images using event id as seed so results are stable
     const seedBase = ev._id.toString().slice(-8);
     const fallback = [600, 800, 400].map((w, i) => `https://picsum.photos/seed/${encodeURIComponent(seedBase + i)}/${w}/600`);
     res.json({ images: fallback });

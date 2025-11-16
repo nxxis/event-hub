@@ -1,40 +1,32 @@
 import React, { useEffect, useState } from 'react';
 
-export default function ApiStatus({ pollInterval = 5000 }) {
-  const [status, setStatus] = useState({ ok: null, loading: true });
+export default function ApiStatus() {
+  const [online, setOnline] = useState(null);
 
   useEffect(() => {
-    let alive = true;
-
+    let mounted = true;
     async function check() {
       try {
-        setStatus((s) => ({ ...s, loading: true }));
-        const res = await fetch('/api/health');
-        const data = await res.json();
-        if (!alive) return;
-        setStatus({ ok: !!data?.ok, loading: false });
+        const res = await fetch((import.meta.env.VITE_API_BASE_URL || window.__API_BASE__ || 'http://localhost:4000') + '/api/health');
+        if (!mounted) return;
+        setOnline(res.ok);
       } catch (e) {
-        if (!alive) return;
-        setStatus({ ok: false, loading: false });
+        if (!mounted) return;
+        setOnline(false);
       }
     }
-
     check();
-    const id = setInterval(check, pollInterval);
+    const t = setInterval(check, 6000);
     return () => {
-      alive = false;
-      clearInterval(id);
+      mounted = false;
+      clearInterval(t);
     };
-  }, [pollInterval]);
+  }, []);
 
-  if (status.loading) return <div className="api-status subtle">Checking API...</div>;
+  if (online === null) return <div style={{ color: 'var(--muted)' }}>Checking API...</div>;
   return (
-    <div
-      className="api-status"
-      style={{ color: status.ok ? 'var(--primary-strong)' : '#d9534f' }}
-      title={status.ok ? 'API available' : 'API not reachable'}
-    >
-      {status.ok ? 'API online' : 'API offline'}
+    <div style={{ color: online ? '#16a34a' : '#ef4444', fontWeight: 700 }}>
+      {online ? 'API online' : 'API offline'}
     </div>
   );
 }
