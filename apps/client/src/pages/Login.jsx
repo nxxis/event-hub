@@ -36,90 +36,61 @@ export default function Login() {
 
   return (
     <div className="center-page">
-      <div className="card card--login" style={{ maxWidth: 920, width: '95%' }}>
-        <div className="login-left" style={{ flex: 1 }}>
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div style={{ width: 60, height: 60 }}>
-                <img src="/logo192.png" alt="logo" style={{ width: '100%', height: '100%' }} onError={(e)=>{e.currentTarget.style.display='none'}} />
+      <div className="login-card" style={{ maxWidth: 980, width: '96%' }}>
+        <div className="login-panel">
+          <div className="login-left-panel">
+            <div className="auth-hero">
+              <div className="brand-visual">
+                <span className="brand-badge" />
+                <div className="brand-title">EventHub</div>
               </div>
-              <div>
-                <div className="brand" style={{ fontSize: 22 }}>
-                  <span className="brand-badge" /> EventHub
-                </div>
-                <div className="subtle mt-1">Campus events. Simple RSVPs. Fast check-ins.</div>
-              </div>
+              <h3 className="auth-head">Campus events made simple</h3>
+              <p className="auth-sub">Discover, RSVP and manage tickets — all in one place.</p>
+
+              <svg className="auth-illus" viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <defs>
+                  <linearGradient id="g1" x1="0" x2="1">
+                    <stop offset="0%" stopColor="#00c6ff" />
+                    <stop offset="100%" stopColor="#7c3aed" />
+                  </linearGradient>
+                </defs>
+                <rect x="0" y="0" width="400" height="260" rx="18" fill="url(#g1)" opacity="0.08" />
+                <g transform="translate(28,36)">
+                  <circle cx="36" cy="36" r="28" fill="#fff" opacity="0.9" />
+                  <rect x="80" y="10" width="180" height="120" rx="10" fill="#fff" opacity="0.9" />
+                  <path d="M14 120c30-26 60-30 92-18s80 40 126 10" stroke="#fff" strokeWidth="3" fill="none" opacity="0.7" />
+                </g>
+              </svg>
             </div>
-            <div style={{ marginTop: 10, color: 'var(--muted)' }}>Join campus events, RSVP quickly and manage your tickets.</div>
           </div>
-        </div>
 
-        <div className="login-right" style={{ flex: 1 }}>
-          <form className="stack" onSubmit={submit} style={{ width: '100%', maxWidth: 420 }}>
-            <div className="h1">Welcome back</div>
-            <div className="subtle">Sign in to RSVP and view your tickets.</div>
-
-            <label htmlFor="login-email" className="sr-only">Email</label>
-            <div className="mt-2">
-              <input
-                id="login-email"
-                ref={emailRef}
-                className="input"
-                type="email"
-                placeholder="Email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                aria-label="Email"
-              />
-            </div>
-
-            <label htmlFor="login-password" className="sr-only">Password</label>
-            <div style={{ position: 'relative' }}>
-              <input
-                id="login-password"
-                className="input"
-                type={showPassword ? 'text' : 'password'}
-                placeholder="Password"
-                required
-                value={form.password}
-                onChange={(e) => setForm({ ...form, password: e.target.value })}
-                aria-label="Password"
-              />
-              <button
-                type="button"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-                onClick={() => setShowPassword((s) => !s)}
-                style={{ position: 'absolute', right: 10, top: 10, background: 'transparent', border: 0, cursor: 'pointer', color: 'var(--muted)' }}
-              >
-                {showPassword ? 'Hide' : 'Show'}
-              </button>
-            </div>
-
-            <div className="row mt-2" style={{ alignItems: 'center' }}>
-              <button className="btn" type="submit" disabled={loading} aria-busy={loading}>
-                {loading ? 'Signing in…' : 'Sign in'}
-              </button>
-              <button
-                className="btn ghost"
-                type="button"
-                onClick={() => {
-                  setForm({ email: 'student@demo.com', password: 'Student123!' });
-                  setErr('');
-                }}
-                aria-label="Fill demo credentials"
-                style={{ marginLeft: 8 }}
-              >
-                Fill demo creds
-              </button>
-            </div>
-
-            {err && (
-              <div role="alert" style={{ color: '#d9534f', marginTop: 8, fontWeight: 600 }}>
-                {err}
+          <div className="login-right-panel">
+            <form className="auth-form" onSubmit={submit}>
+              <div className="auth-heading">
+                <div className="h1">Welcome back</div>
+                <div className="subtle">Sign in to RSVP and view your tickets.</div>
               </div>
-            )}
-          </form>
+
+              <label htmlFor="login-email" className="sr-only">Email</label>
+              <input id="login-email" ref={emailRef} className="input" type="email" placeholder="Email" required value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+
+              <label htmlFor="login-password" className="sr-only">Password</label>
+              <div className="password-wrap">
+                <input id="login-password" className="input" type={showPassword ? 'text' : 'password'} placeholder="Password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+                <button type="button" className="pw-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((s) => !s)}>{showPassword ? 'Hide' : 'Show'}</button>
+              </div>
+
+              {err && <div role="alert" className="auth-error">{err}</div>}
+
+              <div className="auth-actions">
+                <button className="btn primary" type="submit" disabled={loading} aria-busy={loading}>
+                  {loading ? <span className="btn-spinner" aria-hidden="true" /> : null}
+                  <span className="btn-label">{loading ? 'Signing in…' : 'Sign in'}</span>
+                </button>
+                <button className="btn ghost" type="button" onClick={() => { setForm({ email: 'student@demo.com', password: 'Student123!' }); setErr(''); }}>Fill demo creds</button>
+              </div>
+            </form>
+          </div>
         </div>
       </div>
     </div>
