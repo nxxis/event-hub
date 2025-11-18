@@ -2,6 +2,7 @@ import React, { useContext, useState, useRef, useEffect } from 'react';
 import { login } from '@eventhub/api';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { useToast } from '../components/Toast';
 
 export default function Login() {
   const nav = useNavigate();
@@ -12,6 +13,8 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const emailRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
+  const { push: pushToast } = useToast();
 
   const submit = (e) => {
     e.preventDefault();
@@ -32,6 +35,9 @@ export default function Login() {
   useEffect(() => {
     // autofocus email input for convenience
     if (emailRef.current) emailRef.current.focus();
+    // entrance animations
+    const t = setTimeout(() => setMounted(true), 40);
+    return () => clearTimeout(t);
   }, []);
 
   return (
@@ -77,7 +83,13 @@ export default function Login() {
               <label htmlFor="login-password" className="sr-only">Password</label>
               <div className="password-wrap">
                 <input id="login-password" className="input" type={showPassword ? 'text' : 'password'} placeholder="Password" required value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
-                <button type="button" className="pw-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((s) => !s)}>{showPassword ? 'Hide' : 'Show'}</button>
+                <button type="button" className="pw-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} onClick={() => setShowPassword((s) => !s)}>
+                  {showPassword ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 3l18 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><path d="M10.58 10.58a3 3 0 0 0 4.24 4.24" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  ) : (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" strokeWidth="1.2"/></svg>
+                  )}
+                </button>
               </div>
 
               {err && <div role="alert" className="auth-error">{err}</div>}
@@ -87,7 +99,18 @@ export default function Login() {
                   {loading ? <span className="btn-spinner" aria-hidden="true" /> : null}
                   <span className="btn-label">{loading ? 'Signing in…' : 'Sign in'}</span>
                 </button>
-                <button className="btn ghost" type="button" onClick={() => { setForm({ email: 'student@demo.com', password: 'Student123!' }); setErr(''); }}>Fill demo creds</button>
+                <button className="btn ghost" type="button" onClick={async () => {
+                  const creds = 'student@demo.com:Student123!';
+                  try {
+                    await navigator.clipboard.writeText(creds);
+                    pushToast({ type: 'success', message: 'Demo credentials copied to clipboard' });
+                  } catch (e) {
+                    // fallback: still fill the form
+                    pushToast({ type: 'error', message: 'Could not copy to clipboard — filled the fields instead' });
+                  }
+                  setForm({ email: 'student@demo.com', password: 'Student123!' });
+                  setErr('');
+                }}>Fill demo creds</button>
               </div>
             </form>
           </div>

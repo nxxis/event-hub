@@ -415,6 +415,15 @@ body {
   .login-right-panel { padding: 22px; }
 }
 
+/* Entrance animations for the login panels */
+.auth-hero, .auth-form { opacity: 0; transform: translateY(8px); transition: transform 420ms cubic-bezier(.2,.9,.2,1), opacity 420ms ease; }
+.auth-hero.enter, .auth-form.enter { opacity: 1; transform: translateY(0); }
+
+/* small icon color adjustments */
+.pw-toggle svg { color: var(--muted); }
+.btn-spinner { width: 16px; height: 16px; border-radius: 50%; display:inline-block; }
+.btn.primary .btn-spinner { margin-right: 6px; }
+
 /* Top progress bar (route navigation) */
 .top-progress {
   position: fixed;
