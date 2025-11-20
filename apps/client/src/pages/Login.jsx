@@ -15,6 +15,8 @@ export default function Login() {
   const emailRef = useRef(null);
   const [mounted, setMounted] = useState(false);
   const { push: pushToast } = useToast();
+  const [demoCopied, setDemoCopied] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const submit = (e) => {
     e.preventDefault();
@@ -22,11 +24,12 @@ export default function Login() {
     setLoading(true);
     login(form)
       .then(({ token, user }) => {
+        // show a tiny success animation, then navigate
         localStorage.setItem('token', token);
+        setSuccess(true);
         setAuth({ user, loading: false });
-        // redirect back to where user came from, if provided
         const dest = location?.state?.from || '/';
-        nav(dest);
+        setTimeout(() => nav(dest), 220);
       })
       .catch((e) => setErr(e?.response?.data?.message || 'Login failed'))
       .finally(() => setLoading(false));
@@ -45,7 +48,7 @@ export default function Login() {
       <div className="login-card" style={{ maxWidth: 980, width: '96%' }}>
         <div className="login-panel">
           <div className="login-left-panel">
-            <div className="auth-hero">
+              <div className={`auth-hero ${mounted ? 'enter' : ''}`}>
               <div className="brand-visual">
                 <span className="brand-badge" />
                 <div className="brand-title">EventHub</div>
@@ -71,7 +74,7 @@ export default function Login() {
           </div>
 
           <div className="login-right-panel">
-            <form className="auth-form" onSubmit={submit}>
+            <form className={`auth-form ${mounted ? 'enter' : ''}`} onSubmit={submit}>
               <div className="auth-heading">
                 <div className="h1">Welcome back</div>
                 <div className="subtle">Sign in to RSVP and view your tickets.</div>
@@ -95,21 +98,29 @@ export default function Login() {
               {err && <div role="alert" className="auth-error">{err}</div>}
 
               <div className="auth-actions">
-                <button className="btn primary" type="submit" disabled={loading} aria-busy={loading}>
+                <button className={`btn primary ${success ? 'success' : ''}`} type="submit" disabled={loading || success} aria-busy={loading}>
                   {loading ? <span className="btn-spinner" aria-hidden="true" /> : null}
-                  <span className="btn-label">{loading ? 'Signing in…' : 'Sign in'}</span>
+                  {success ? (
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  ) : null}
+                  <span className="btn-label">{loading ? 'Signing in…' : success ? 'Success' : 'Sign in'}</span>
                 </button>
-                <button className="btn ghost" type="button" onClick={async () => {
+                <button className={`btn ghost ${demoCopied ? 'copied' : ''}`} type="button" onClick={async () => {
                   const creds = 'student@demo.com:Student123!';
+                  let copied = false;
                   try {
                     await navigator.clipboard.writeText(creds);
                     pushToast({ type: 'success', message: 'Demo credentials copied to clipboard' });
+                    copied = true;
                   } catch (e) {
-                    // fallback: still fill the form
                     pushToast({ type: 'error', message: 'Could not copy to clipboard — filled the fields instead' });
                   }
                   setForm({ email: 'student@demo.com', password: 'Student123!' });
                   setErr('');
+                  if (copied) {
+                    setDemoCopied(true);
+                    setTimeout(() => setDemoCopied(false), 900);
+                  }
                 }}>Fill demo creds</button>
               </div>
             </form>
