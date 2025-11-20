@@ -388,14 +388,18 @@ body {
 
 /* Login specific styles */
 .login-card { display: flex; align-items: center; justify-content: center; }
-.login-panel { display: flex; width: 100%; gap: 0; border-radius: 16px; overflow: hidden; box-shadow: 0 24px 60px rgba(7,18,42,0.08); }
-.login-left-panel { flex: 1.05; background: linear-gradient(180deg, rgba(0,198,255,0.06), rgba(124,58,237,0.04)); padding: 36px 32px; display: flex; align-items: center; }
+.login-panel { display: flex; width: 100%; gap: 0; border-radius: 16px; overflow: visible; box-shadow: 0 28px 70px rgba(7,18,42,0.08); position: relative; }
+.login-panel::after { content: ''; position: absolute; inset: -1px; border-radius: 18px; pointer-events: none; background: linear-gradient(90deg, rgba(0,198,255,0.06), rgba(124,58,237,0.06)); z-index: 0; }
+.login-left-panel { flex: 1.05; background: linear-gradient(180deg, rgba(0,198,255,0.04), rgba(124,58,237,0.03)); padding: 36px 32px; display: flex; align-items: center; position: relative; z-index: 2; }
 .auth-hero { max-width: 360px; }
 .brand-visual { display:flex; align-items:center; gap:12px; margin-bottom: 12px; }
 .brand-title { font-weight: 800; color: var(--text); }
 .auth-head { margin: 8px 0 6px; font-size: 20px; color: var(--text); }
 .auth-sub { color: var(--muted); margin-bottom: 18px; }
-.auth-illus { width: 100%; max-width: 360px; height: auto; display: block; margin-top: 6px; border-radius: 12px; }
+.auth-illus { width: 100%; max-width: 360px; height: auto; display: block; margin-top: 6px; border-radius: 12px; overflow: visible; }
+.illus-group { transform-origin: center; }
+.auth-illus.enter .illus-group { animation: illus-slide 6000ms linear infinite; }
+@keyframes illus-slide { 0% { transform: translateX(0); } 50% { transform: translateX(8px); } 100% { transform: translateX(0); } }
 
 .login-right-panel { flex: 1; background: linear-gradient(180deg, #ffffff, #fbfdff); padding: 36px; display: flex; align-items: center; }
 .auth-form { width: 100%; max-width: 420px; display: grid; gap: 12px; }
