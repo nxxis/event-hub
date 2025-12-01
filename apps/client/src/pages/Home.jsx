@@ -17,6 +17,10 @@ function EventCard({ ev, onRSVP, hasTicket, rsvpLoading }) {
     hour: '2-digit',
     minute: '2-digit',
   });
+  const now = new Date();
+  const hasPassed = ev.endAt
+    ? new Date(ev.endAt) <= now
+    : new Date(ev.startAt) <= now;
 
   return (
     <a className="card event" href={`/events/${ev._id}`}>
@@ -29,18 +33,24 @@ function EventCard({ ev, onRSVP, hasTicket, rsvpLoading }) {
       </div>
       <div className="cta">
         {!hasTicket ? (
-          <button
-            className="btn secondary"
-            type="button"
-            onClick={(e) => {
-              e.preventDefault();
-              onRSVP(ev);
-            }}
-            aria-label={`RSVP to ${ev.title}`}
-            disabled={rsvpLoading}
-          >
-            {rsvpLoading ? 'Sending…' : 'RSVP'}
-          </button>
+          hasPassed ? (
+            <button className="btn secondary" type="button" disabled>
+              Event passed
+            </button>
+          ) : (
+            <button
+              className="btn secondary"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                onRSVP(ev);
+              }}
+              aria-label={`RSVP to ${ev.title}`}
+              disabled={rsvpLoading}
+            >
+              {rsvpLoading ? 'Sending…' : 'RSVP'}
+            </button>
+          )
         ) : (
           <button className="btn secondary" type="button">
             Details
@@ -128,7 +138,10 @@ export default function Home() {
       });
       if (res && res.status) {
         setTicketSet((s) => new Set([...Array.from(s), ev._id]));
-        pushToast({ type: 'success', message: `RSVP confirmed for "${ev.title}"` });
+        pushToast({
+          type: 'success',
+          message: `RSVP confirmed for "${ev.title}"`,
+        });
       }
     } catch (e) {
       setRsvpLoading((s) => {
@@ -161,7 +174,13 @@ export default function Home() {
 
   return (
     <div className="stack">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div
+        style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+        }}
+      >
         <ApiStatus />
       </div>
       {items && items.length > 0 && (
@@ -189,7 +208,13 @@ export default function Home() {
 
       {err && (
         <div className="card" style={{ color: '#ffb4b4' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+            }}
+          >
             <div>Error: {err}</div>
             <button className="btn small" onClick={() => setQ(q)}>
               Retry
@@ -224,12 +249,33 @@ export default function Home() {
         </div>
       )}
 
-      <Modal open={confirmOpen} title={confirmEvent ? `RSVP to "${confirmEvent.title}"` : 'RSVP'} onClose={() => setConfirmOpen(false)}>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+      <Modal
+        open={confirmOpen}
+        title={confirmEvent ? `RSVP to "${confirmEvent.title}"` : 'RSVP'}
+        onClose={() => setConfirmOpen(false)}
+      >
+        <div
+          style={{
+            display: 'flex',
+            gap: 12,
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
           <div>Are you sure you want to RSVP to this event?</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className="btn secondary" onClick={() => setConfirmOpen(false)}>Cancel</button>
-            <button className="btn" onClick={() => confirmEvent && doRSVP(confirmEvent)}>Confirm</button>
+            <button
+              className="btn secondary"
+              onClick={() => setConfirmOpen(false)}
+            >
+              Cancel
+            </button>
+            <button
+              className="btn"
+              onClick={() => confirmEvent && doRSVP(confirmEvent)}
+            >
+              Confirm
+            </button>
           </div>
         </div>
       </Modal>

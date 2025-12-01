@@ -14,6 +14,11 @@ exports.rsvp = async (req, res, next) => {
     if (!ev || ev.status !== 'published')
       return res.status(400).json({ message: 'Event not available' });
 
+    // disallow RSVPing to events that have already finished
+    const now = new Date();
+    if (ev.endAt && new Date(ev.endAt) <= now)
+      return res.status(400).json({ message: 'Cannot RSVP to past events' });
+
     // if a ticket exists for this user+event, handle based on status
     const existing = await Ticket.findOne({
       event: eventId,
