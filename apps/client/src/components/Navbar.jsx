@@ -1,10 +1,12 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Logo from './Logo';
+import { AuthContext } from '../context/AuthContext';
 
 export default function Navbar() {
   const token =
     typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+  const { auth } = useContext(AuthContext);
   const [scrolled, setScrolled] = useState(false);
   const [theme, setTheme] = useState(() => {
     try {
@@ -66,7 +68,14 @@ export default function Navbar() {
         <div className="nav-spacer" />
         <nav className="row" style={{ alignItems: 'center' }}>
           <a href="/">Home</a>
-          <a href="/tickets">My Tickets</a>
+          {/* hide My Tickets for admin users */}
+          {!(auth && auth.user && auth.user.role === 'admin') && (
+            <a href="/tickets">My Tickets</a>
+          )}
+          {/* admin-only events dashboard */}
+          {auth && auth.user && auth.user.role === 'admin' && (
+            <a href="/admin/events">Admin</a>
+          )}
           {!token ? <a href="/login">Login</a> : <a href="/logout">Logout</a>}
           <button
             onClick={toggleTheme}

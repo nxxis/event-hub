@@ -6,7 +6,7 @@ import Hero from '../components/Hero';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
 
-function EventCard({ ev, onRSVP, hasTicket, rsvpLoading }) {
+function EventCard({ ev, onRSVP, hasTicket, rsvpLoading, isAdmin }) {
   const dt = new Date(ev.startAt);
   const day = dt.toLocaleDateString(undefined, {
     month: 'short',
@@ -31,7 +31,9 @@ function EventCard({ ev, onRSVP, hasTicket, rsvpLoading }) {
         </div>
       </div>
       <div className="cta">
-        {!hasTicket ? (
+        {isAdmin ? (
+          <div className="subtle">Admins cannot RSVP</div>
+        ) : !hasTicket ? (
           hasPassed ? (
             <button className="btn secondary" type="button" disabled>
               Event passed
@@ -119,6 +121,10 @@ export default function Home() {
       nav('/login', {
         state: { message: 'You must login to RSVP', from: location.pathname },
       });
+      return;
+    }
+    if (auth?.user && auth.user.role === 'admin') {
+      pushToast({ type: 'error', message: 'Admin accounts cannot RSVP' });
       return;
     }
     setConfirmEvent(ev);
@@ -241,6 +247,7 @@ export default function Home() {
               hasTicket={ticketSet.has(ev._id)}
               onRSVP={handleRSVP}
               rsvpLoading={rsvpLoading.has(ev._id)}
+              isAdmin={auth?.user && auth.user.role === 'admin'}
             />
           ))}
         </div>

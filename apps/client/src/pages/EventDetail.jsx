@@ -12,6 +12,7 @@ export default function EventDetail() {
   const [ticketsLoaded, setTicketsLoaded] = useState(true);
   const [userTicketId, setUserTicketId] = useState(null);
   const { auth } = useContext(AuthContext);
+  const isAdmin = auth?.user && auth.user.role === 'admin';
   const nav = useNavigate();
   const location = useLocation();
 
@@ -118,6 +119,8 @@ export default function EventDetail() {
               <div className="skel" style={{ width: 80, height: 36 }} />
               <div className="skel" style={{ width: 220, height: 18 }} />
             </div>
+          ) : isAdmin ? (
+            <div className="subtle">Admins cannot RSVP to events.</div>
           ) : !hasTicket ? (
             <>
               <button className="btn" onClick={onRSVP}>

@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { myTickets, ticketQR, cancelTicket } from '@eventhub/api';
+import { AuthContext } from '../context/AuthContext';
 
 function fmtForGCal(d) {
   return new Date(d).toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
@@ -72,11 +73,31 @@ export default function Tickets() {
   const [err, setErr] = useState('');
   const nav = useNavigate();
   const location = useLocation();
+  const { auth } = useContext(AuthContext);
+
+  useEffect(() => {
+    if (
+      auth &&
+      auth.loading === false &&
+      auth.user &&
+      auth.user.role === 'admin'
+    ) {
+      // redirect admins away from tickets page
+      nav('/', {
+        replace: true,
+        state: { message: 'Admin accounts cannot access My Tickets' },
+      });
+    }
+  }, [auth, nav]);
 
   useEffect(() => {
     let alive = true;
 
     (async () => {
+      if (auth && auth.user && auth.user.role === 'admin') {
+        setErr('Admin accounts cannot view tickets');
+        return;
+      }
       try {
         const tickets = await myTickets();
         if (!alive) return;

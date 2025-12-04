@@ -7,6 +7,7 @@ import EventDetail from '../pages/EventDetail';
 import Login from '../pages/Login';
 import Logout from '../pages/Logout';
 import Tickets from '../pages/Tickets';
+import AdminEvents from '../pages/AdminEvents';
 import Protected from './Protected';
 
 export default function AppRouter() {
@@ -52,6 +53,16 @@ export default function AppRouter() {
             <Page>
               <Protected>
                 <Tickets />
+              </Protected>
+            </Page>
+          }
+        />
+        <Route
+          path="/admin/events"
+          element={
+            <Page>
+              <Protected>
+                <AdminEvents />
               </Protected>
             </Page>
           }
