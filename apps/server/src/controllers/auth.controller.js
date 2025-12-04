@@ -2,6 +2,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { jwtSecret, jwtExpiresIn } = require('../config/env');
 const User = require('../models/user.model');
+const crypto = require('crypto');
 
 function signToken(user) {
   return jwt.sign(
@@ -62,4 +63,35 @@ exports.login = async (req, res, next) => {
 
 exports.me = async (req, res) => {
   res.json({ user: req.user });
+};
+
+// Admin-only: create a user (organiser/admin) and return plaintext password
+exports.createByAdmin = async (req, res, next) => {
+  try {
+    const { name, email, role = 'organiser' } = req.body;
+    if (!name || !email)
+      return res.status(400).json({ message: 'Missing name or email' });
+    if (!['organiser', 'admin'].includes(role))
+      return res.status(400).json({ message: 'Invalid role' });
+    const exists = await User.findOne({ email });
+    if (exists) return res.status(409).json({ message: 'Email already used' });
+
+    // generate a password (hex) and hash it
+    const plain = crypto.randomBytes(6).toString('hex');
+    const passwordHash = await require('bcryptjs').hash(plain, 10);
+    const user = await User.create({ name, email, passwordHash, role });
+
+    // Return created user info and the plaintext password so admin can send it
+    res.status(201).json({
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      password: plain,
+    });
+  } catch (e) {
+    next(e);
+  }
 };

@@ -8,6 +8,7 @@ import Login from '../pages/Login';
 import Logout from '../pages/Logout';
 import Tickets from '../pages/Tickets';
 import AdminEvents from '../pages/AdminEvents';
+import AdminUsers from '../pages/AdminUsers';
 import Protected from './Protected';
 
 export default function AppRouter() {
@@ -63,6 +64,16 @@ export default function AppRouter() {
             <Page>
               <Protected>
                 <AdminEvents />
+              </Protected>
+            </Page>
+          }
+        />
+        <Route
+          path="/admin/users"
+          element={
+            <Page>
+              <Protected>
+                <AdminUsers />
               </Protected>
             </Page>
           }

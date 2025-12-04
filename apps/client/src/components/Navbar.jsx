@@ -74,7 +74,10 @@ export default function Navbar() {
           )}
           {/* admin-only events dashboard */}
           {auth && auth.user && auth.user.role === 'admin' && (
-            <a href="/admin/events">Admin</a>
+            <>
+              <a href="/admin/events">Admin</a>
+              <a href="/admin/users">Users</a>
+            </>
           )}
           {!token ? <a href="/login">Login</a> : <a href="/logout">Logout</a>}
           <button
