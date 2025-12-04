@@ -11,6 +11,7 @@ import AdminEvents from '../pages/AdminEvents';
 import AdminUsers from '../pages/AdminUsers';
 import AdminOrgs from '../pages/AdminOrgs';
 import OrganiserOrgs from '../pages/OrganiserOrgs';
+import OrganiserEvents from '../pages/OrganiserEvents';
 import Protected from './Protected';
 
 export default function AppRouter() {
@@ -96,6 +97,16 @@ export default function AppRouter() {
             <Page>
               <Protected>
                 <OrganiserOrgs />
+              </Protected>
+            </Page>
+          }
+        />
+        <Route
+          path="/organiser/events"
+          element={
+            <Page>
+              <Protected>
+                <OrganiserEvents />
               </Protected>
             </Page>
           }

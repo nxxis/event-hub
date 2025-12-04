@@ -1,6 +1,7 @@
 const Event = require('../models/event.model');
 const Ticket = require('../models/ticket.model');
 const mongoose = require('mongoose');
+const Organisation = require('../models/organisation.model');
 
 const { createEvent } = require('ics');
 const axios = require('axios');
@@ -168,6 +169,27 @@ exports.adminList = async (req, res, next) => {
       return { ...obj, participantCount: map[ev._id.toString()] || 0 };
     });
     res.json(out);
+  } catch (e) {
+    next(e);
+  }
+};
+
+// Organiser: list events for organisation(s) owned by the current user
+exports.organiserList = async (req, res, next) => {
+  try {
+    const userId = req.user && req.user.id;
+    if (!userId) return res.status(401).json({ message: 'Unauthorized' });
+
+    // Find organisations owned by this user
+    const orgs = await Organisation.find({ owner: userId }).select('_id');
+    if (!orgs || orgs.length === 0) return res.json([]);
+    const orgIds = orgs.map((o) => o._id);
+
+    const items = await Event.find({ organisation: { $in: orgIds } })
+      .sort({ startAt: 1 })
+      .populate('organisation', 'name');
+
+    res.json(items);
   } catch (e) {
     next(e);
   }

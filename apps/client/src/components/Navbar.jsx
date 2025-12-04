@@ -84,7 +84,10 @@ export default function Navbar() {
           )}
           {/* organiser-only club creation */}
           {auth && auth.user && auth.user.role === 'organiser' && (
-            <a href="/organiser/orgs">Clubs</a>
+            <>
+              <a href="/organiser/events">Events</a>
+              <a href="/organiser/orgs">Clubs</a>
+            </>
           )}
           {!token ? <a href="/login">Login</a> : <a href="/logout">Logout</a>}
           <button

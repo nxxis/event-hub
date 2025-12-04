@@ -3,6 +3,7 @@ const ctrl = require('../controllers/event.controller');
 const { requireAuth, requireRole } = require('../middleware/auth');
 
 router.get('/', ctrl.list);
+router.get('/organiser', requireAuth, requireRole(['organiser', 'admin']), ctrl.organiserList);
 router.get('/admin', requireAuth, requireRole(['admin']), ctrl.adminList);
 router.get(
   '/:id/attendees',
