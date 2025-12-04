@@ -1,6 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { getEvent, rsvp, myTickets, cancelTicket } from '@eventhub/api';
+import {
+  getEvent,
+  rsvp,
+  myTickets,
+  cancelTicket,
+  adminEventAttendees,
+} from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
 
 export default function EventDetail() {
@@ -11,6 +17,8 @@ export default function EventDetail() {
   const [hasTicket, setHasTicket] = useState(false);
   const [ticketsLoaded, setTicketsLoaded] = useState(true);
   const [userTicketId, setUserTicketId] = useState(null);
+  const [attendees, setAttendees] = useState(undefined); // undefined=not loaded, null=loading
+  const [attendeesErr, setAttendeesErr] = useState('');
   const { auth } = useContext(AuthContext);
   const isAdmin = auth?.user && auth.user.role === 'admin';
   const nav = useNavigate();
@@ -104,6 +112,18 @@ export default function EventDetail() {
       .catch((e) => setErr(e?.response?.data?.message || 'Failed to cancel'));
   };
 
+  const loadAttendees = async () => {
+    setAttendees(null);
+    setAttendeesErr('');
+    try {
+      const list = await adminEventAttendees(ev._id);
+      setAttendees(list || []);
+    } catch (e) {
+      setAttendeesErr(e?.response?.data?.message || 'Failed to load attendees');
+      setAttendees([]);
+    }
+  };
+
   return (
     <div className="stack">
       <div className="card">
@@ -153,6 +173,61 @@ export default function EventDetail() {
             {err}
           </div>
         )}
+        {auth?.user &&
+          (auth.user.role === 'admin' || auth.user.role === 'organiser') && (
+            <div style={{ marginTop: 12 }} className="card">
+              <div className="h2">Attendees</div>
+              <div style={{ marginTop: 8 }}>
+                <button
+                  className="btn"
+                  onClick={loadAttendees}
+                  disabled={attendees === null}
+                >
+                  {attendees === undefined
+                    ? 'View attendees'
+                    : attendees === null
+                    ? 'Loading…'
+                    : 'Refresh attendees'}
+                </button>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                {attendeesErr && (
+                  <div style={{ color: '#ffb4b4' }}>{attendeesErr}</div>
+                )}
+                {attendees === undefined ? null : attendees === null ? (
+                  <div className="subtle">Loading attendees…</div>
+                ) : attendees.length === 0 ? (
+                  <div className="subtle">No attendees yet</div>
+                ) : (
+                  <div
+                    style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+                  >
+                    {attendees.map((a) => (
+                      <div
+                        key={a.ticketId}
+                        className="card"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600 }}>
+                            {a.user ? a.user.name : 'Anonymous'}
+                          </div>
+                          <div className="subtle">
+                            {a.user ? a.user.email : ''}
+                          </div>
+                        </div>
+                        <div className="subtle">{a.status}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
       </div>
     </div>
   );

@@ -7,7 +7,7 @@ router.get('/admin', requireAuth, requireRole(['admin']), ctrl.adminList);
 router.get(
   '/:id/attendees',
   requireAuth,
-  requireRole(['admin']),
+  requireRole(['admin', 'organiser']),
   ctrl.attendees
 );
 router.get('/:id', ctrl.getById);

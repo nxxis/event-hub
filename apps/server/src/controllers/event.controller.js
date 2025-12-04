@@ -180,6 +180,16 @@ exports.attendees = async (req, res, next) => {
     if (!mongoose.Types.ObjectId.isValid(id))
       return res.status(400).json({ message: 'Invalid event id' });
 
+    // If organiser requests attendees, ensure they own the event (via organisation.owner)
+    if (req.user && req.user.role === 'organiser') {
+      const ev = await Event.findById(id).populate('organisation', 'owner');
+      if (!ev) return res.status(404).json({ message: 'Event not found' });
+      const orgOwner = ev.organisation && ev.organisation.owner;
+      if (!orgOwner || orgOwner.toString() !== (req.user.id || req.user._id)) {
+        return res.status(403).json({ message: 'Forbidden' });
+      }
+    }
+
     const items = await Ticket.find({
       event: id,
       status: { $in: ['active', 'checked_in'] },
