@@ -80,12 +80,12 @@ export default function Tickets() {
       auth &&
       auth.loading === false &&
       auth.user &&
-      auth.user.role === 'admin'
+      (auth.user.role === 'admin' || auth.user.role === 'organiser')
     ) {
       // redirect admins away from tickets page
       nav('/', {
         replace: true,
-        state: { message: 'Admin accounts cannot access My Tickets' },
+        state: { message: 'Organiser/admin accounts cannot access My Tickets' },
       });
     }
   }, [auth, nav]);
@@ -94,8 +94,12 @@ export default function Tickets() {
     let alive = true;
 
     (async () => {
-      if (auth && auth.user && auth.user.role === 'admin') {
-        setErr('Admin accounts cannot view tickets');
+      if (
+        auth &&
+        auth.user &&
+        (auth.user.role === 'admin' || auth.user.role === 'organiser')
+      ) {
+        setErr('Organiser/admin accounts cannot view tickets');
         return;
       }
       try {

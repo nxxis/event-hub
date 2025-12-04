@@ -6,7 +6,7 @@ import Hero from '../components/Hero';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
 
-function EventCard({ ev, onRSVP, hasTicket, rsvpLoading, isAdmin }) {
+function EventCard({ ev, onRSVP, hasTicket, rsvpLoading, isRestricted }) {
   const dt = new Date(ev.startAt);
   const day = dt.toLocaleDateString(undefined, {
     month: 'short',
@@ -31,8 +31,8 @@ function EventCard({ ev, onRSVP, hasTicket, rsvpLoading, isAdmin }) {
         </div>
       </div>
       <div className="cta">
-        {isAdmin ? (
-          <div className="subtle">Admins cannot RSVP</div>
+        {isRestricted ? (
+          <div className="subtle">Organisers and admins cannot RSVP</div>
         ) : !hasTicket ? (
           hasPassed ? (
             <button className="btn secondary" type="button" disabled>
@@ -123,7 +123,10 @@ export default function Home() {
       });
       return;
     }
-    if (auth?.user && auth.user.role === 'admin') {
+    if (
+      auth?.user &&
+      (auth.user.role === 'admin' || auth.user.role === 'organiser')
+    ) {
       pushToast({ type: 'error', message: 'Admin accounts cannot RSVP' });
       return;
     }
@@ -247,7 +250,10 @@ export default function Home() {
               hasTicket={ticketSet.has(ev._id)}
               onRSVP={handleRSVP}
               rsvpLoading={rsvpLoading.has(ev._id)}
-              isAdmin={auth?.user && auth.user.role === 'admin'}
+              isRestricted={
+                auth?.user &&
+                (auth.user.role === 'admin' || auth.user.role === 'organiser')
+              }
             />
           ))}
         </div>

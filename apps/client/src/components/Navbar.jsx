@@ -68,16 +68,23 @@ export default function Navbar() {
         <div className="nav-spacer" />
         <nav className="row" style={{ alignItems: 'center' }}>
           <a href="/">Home</a>
-          {/* hide My Tickets for admin users */}
-          {!(auth && auth.user && auth.user.role === 'admin') && (
-            <a href="/tickets">My Tickets</a>
-          )}
+          {/* hide My Tickets for admin and organiser users */}
+          {!(
+            auth &&
+            auth.user &&
+            (auth.user.role === 'admin' || auth.user.role === 'organiser')
+          ) && <a href="/tickets">My Tickets</a>}
           {/* admin-only events dashboard */}
           {auth && auth.user && auth.user.role === 'admin' && (
             <>
               <a href="/admin/events">Admin</a>
+              <a href="/admin/orgs">Approvals</a>
               <a href="/admin/users">Users</a>
             </>
+          )}
+          {/* organiser-only club creation */}
+          {auth && auth.user && auth.user.role === 'organiser' && (
+            <a href="/organiser/orgs">Clubs</a>
           )}
           {!token ? <a href="/login">Login</a> : <a href="/logout">Logout</a>}
           <button
