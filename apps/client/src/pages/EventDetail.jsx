@@ -128,13 +128,34 @@ export default function EventDetail() {
   return (
     <div className="stack">
       <div className="card">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+          }}
+        >
           <div className="h1">{ev.title}</div>
           <div style={{ display: 'flex', gap: 8 }}>
-            <button className={activeTab === 'details' ? 'btn' : 'btn ghost'} onClick={() => setActiveTab('details')}>Details</button>
-            {auth?.user && (auth.user.role === 'admin' || auth.user.role === 'organiser') && (
-              <button className={activeTab === 'attendees' ? 'btn' : 'btn ghost'} onClick={() => { setActiveTab('attendees'); if (attendees === undefined) loadAttendees(); }}>Attendees</button>
-            )}
+            <button
+              className={activeTab === 'details' ? 'btn' : 'btn ghost'}
+              onClick={() => setActiveTab('details')}
+            >
+              Details
+            </button>
+            {auth?.user &&
+              (auth.user.role === 'admin' ||
+                auth.user.role === 'organiser') && (
+                <button
+                  className={activeTab === 'attendees' ? 'btn' : 'btn ghost'}
+                  onClick={() => {
+                    setActiveTab('attendees');
+                    if (attendees === undefined) loadAttendees();
+                  }}
+                >
+                  Attendees
+                </button>
+              )}
           </div>
         </div>
         <div className="subtle">
@@ -155,53 +176,95 @@ export default function EventDetail() {
                   <div className="skel" style={{ width: 220, height: 18 }} />
                 </div>
               ) : isRestricted ? (
-                <div className="subtle">Organisers and admins cannot RSVP to events.</div>
+                <div className="subtle">
+                  Organisers and admins cannot RSVP to events.
+                </div>
               ) : !hasTicket ? (
                 <>
-                  <button className="btn" onClick={onRSVP}>RSVP</button>
+                  <button className="btn" onClick={onRSVP}>
+                    RSVP
+                  </button>
                 </>
               ) : (
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
-                  <div className="subtle" style={{ marginLeft: 8 }}>Already RSVP'd</div>
-                  <button className="btn muted" onClick={onCancel}>Cancel RSVP</button>
+                  <div className="subtle" style={{ marginLeft: 8 }}>
+                    Already RSVP'd
+                  </div>
+                  <button className="btn muted" onClick={onCancel}>
+                    Cancel RSVP
+                  </button>
                 </div>
               )}
             </div>
-            {msg && <div className="mt-2" style={{ color: '#9dffcf' }}>{msg}</div>}
-            {err && <div className="mt-2" style={{ color: '#ffb4b4' }}>{err}</div>}
+            {msg && (
+              <div className="mt-2" style={{ color: '#9dffcf' }}>
+                {msg}
+              </div>
+            )}
+            {err && (
+              <div className="mt-2" style={{ color: '#ffb4b4' }}>
+                {err}
+              </div>
+            )}
           </>
         )}
 
-        {activeTab === 'attendees' && auth?.user && (auth.user.role === 'admin' || auth.user.role === 'organiser') && (
-          <div style={{ marginTop: 12 }} className="card">
-            <div className="h2">Attendees</div>
-            <div style={{ marginTop: 8 }}>
-              <button className="btn" onClick={loadAttendees} disabled={attendees === null}>
-                {attendees === undefined ? 'Load attendees' : attendees === null ? 'Loading…' : 'Refresh attendees'}
-              </button>
-            </div>
-            <div style={{ marginTop: 10 }}>
-              {attendeesErr && <div style={{ color: '#ffb4b4' }}>{attendeesErr}</div>}
-              {attendees === undefined ? null : attendees === null ? (
-                <div className="subtle">Loading attendees…</div>
-              ) : attendees.length === 0 ? (
-                <div className="subtle">No attendees yet</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                  {attendees.map((a) => (
-                    <div key={a.ticketId} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{a.user ? a.user.name : 'Anonymous'}</div>
-                        <div className="subtle">{a.user ? a.user.email : ''}</div>
+        {activeTab === 'attendees' &&
+          auth?.user &&
+          (auth.user.role === 'admin' || auth.user.role === 'organiser') && (
+            <div style={{ marginTop: 12 }} className="card">
+              <div className="h2">Attendees</div>
+              <div style={{ marginTop: 8 }}>
+                <button
+                  className="btn"
+                  onClick={loadAttendees}
+                  disabled={attendees === null}
+                >
+                  {attendees === undefined
+                    ? 'Load attendees'
+                    : attendees === null
+                    ? 'Loading…'
+                    : 'Refresh attendees'}
+                </button>
+              </div>
+              <div style={{ marginTop: 10 }}>
+                {attendeesErr && (
+                  <div style={{ color: '#ffb4b4' }}>{attendeesErr}</div>
+                )}
+                {attendees === undefined ? null : attendees === null ? (
+                  <div className="subtle">Loading attendees…</div>
+                ) : attendees.length === 0 ? (
+                  <div className="subtle">No attendees yet</div>
+                ) : (
+                  <div
+                    style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+                  >
+                    {attendees.map((a) => (
+                      <div
+                        key={a.ticketId}
+                        className="card"
+                        style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                        }}
+                      >
+                        <div>
+                          <div style={{ fontWeight: 600 }}>
+                            {a.user ? a.user.name : 'Anonymous'}
+                          </div>
+                          <div className="subtle">
+                            {a.user ? a.user.email : ''}
+                          </div>
+                        </div>
+                        <div className="subtle">{a.status}</div>
                       </div>
-                      <div className="subtle">{a.status}</div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   );
