@@ -2,7 +2,6 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { listEvents, rsvp, myTickets } from '@eventhub/api';
 import { AuthContext } from '../context/AuthContext';
-import ApiStatus from '../components/ApiStatus';
 import Hero from '../components/Hero';
 import Modal from '../components/Modal';
 import { useToast } from '../components/Toast';
@@ -180,9 +179,7 @@ export default function Home() {
           justifyContent: 'space-between',
           alignItems: 'center',
         }}
-      >
-        <ApiStatus />
-      </div>
+      />
       {items && items.length > 0 && (
         <Hero
           featured={items[0]}

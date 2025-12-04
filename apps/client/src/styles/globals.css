@@ -162,6 +162,12 @@ body {
   color: var(--text);
 }
 
+/* Ensure the main container sits below the absolute/overlay nav so pages
+   without a hero (e.g. Tickets) don't render content behind the header. */
+.nav + .container {
+  padding-top: 68px; /* matches nav visual height (adjust if you change nav sizing) */
+}
+
 .card {
   background: linear-gradient(
     180deg,
