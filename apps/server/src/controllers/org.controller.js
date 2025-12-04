@@ -38,6 +38,20 @@ exports.create = async (req, res, next) => {
     const owner = req.user && req.user.id;
     if (!owner) return res.status(401).json({ message: 'Unauthorized' });
 
+    // Enforce one organisation per organiser (admins may create multiple)
+    try {
+      const userRole = req.user && req.user.role;
+      if (userRole === 'organiser') {
+        const already = await Organisation.findOne({ owner });
+        if (already)
+          return res
+            .status(403)
+            .json({ message: 'Organisers may only create one organisation' });
+      }
+    } catch (e) {
+      // ignore lookup errors and continue to main error handler
+    }
+
     const org = await Organisation.create({
       name,
       description: description || '',

@@ -8,7 +8,7 @@ export default function OrganiserOrgs() {
   const [description, setDescription] = useState('');
   const [err, setErr] = useState('');
   const [success, setSuccess] = useState(null);
-  const [myOrgs, setMyOrgs] = useState(null);
+  const [myOrgsList, setMyOrgsList] = useState(null);
 
   useEffect(() => {
     if (!auth || auth.loading) return;
@@ -18,9 +18,9 @@ export default function OrganiserOrgs() {
       try {
         const mine = await myOrgs();
         if (!alive) return;
-        setMyOrgs(mine || []);
+        setMyOrgsList(mine || []);
       } catch (e) {
-        setMyOrgs([]);
+        setMyOrgsList([]);
       }
     })();
     return () => {
@@ -40,7 +40,7 @@ export default function OrganiserOrgs() {
       setSuccess(org);
       setName('');
       setDescription('');
-      setMyOrgs((s) => (s ? [org, ...s] : [org]));
+      setMyOrgsList((s) => (s ? [org, ...s] : [org]));
     } catch (e) {
       setErr(e?.response?.data?.message || 'Failed to create organisation');
     }
@@ -95,13 +95,13 @@ export default function OrganiserOrgs() {
 
       <div className="card">
         <div className="h2">Your clubs</div>
-        {myOrgs === null ? (
+        {myOrgsList === null ? (
           <div className="subtle">Loading…</div>
-        ) : myOrgs.length === 0 ? (
+        ) : myOrgsList.length === 0 ? (
           <div className="subtle">You have not created any clubs yet.</div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {myOrgs.map((o) => (
+            {myOrgsList.map((o) => (
               <div
                 key={o._id}
                 className="card"
