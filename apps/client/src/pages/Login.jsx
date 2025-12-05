@@ -48,28 +48,13 @@ export default function Login() {
       <div className="login-card" style={{ maxWidth: 980, width: '96%' }}>
         <div className="login-panel">
           <div className="login-left-panel">
-              <div className={`auth-hero ${mounted ? 'enter' : ''}`}>
+            <div className={`auth-hero ${mounted ? 'enter' : ''}`}>
               <div className="brand-visual">
                 <span className="brand-badge" />
                 <div className="brand-title">EventHub</div>
               </div>
               <h3 className="auth-head">Campus events made simple</h3>
               <p className="auth-sub">Discover, RSVP and manage tickets — all in one place.</p>
-
-              <svg className={`auth-illus ${mounted ? 'enter' : ''}`} viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                <defs>
-                  <linearGradient id="g1" x1="0" x2="1">
-                    <stop offset="0%" stopColor="#00c6ff" />
-                    <stop offset="100%" stopColor="#7c3aed" />
-                  </linearGradient>
-                </defs>
-                <rect x="0" y="0" width="400" height="260" rx="18" fill="url(#g1)" opacity="0.08" />
-                <g transform="translate(28,36)" className="illus-group">
-                  <image href="/logo192.png" x="8" y="8" width="56" height="56" preserveAspectRatio="xMidYMid slice" />
-                  <rect x="80" y="10" width="180" height="120" rx="10" fill="#fff" opacity="0.9" />
-                  <path d="M14 120c30-26 60-30 92-18s80 40 126 10" stroke="#fff" strokeWidth="3" fill="none" opacity="0.7" />
-                </g>
-              </svg>
             </div>
           </div>
 
@@ -94,9 +79,6 @@ export default function Login() {
                   )}
                 </button>
               </div>
-
-              {err && <div role="alert" className="auth-error">{err}</div>}
-
               <div className="auth-actions">
                 <button className={`btn primary ${success ? 'success' : ''}`} type="submit" disabled={loading || success} aria-busy={loading}>
                   {loading ? <span className="btn-spinner" aria-hidden="true" /> : null}
