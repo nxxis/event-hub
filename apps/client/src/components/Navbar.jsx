@@ -87,6 +87,7 @@ export default function Navbar() {
             <>
               <a href="/organiser/events">Events</a>
               <a href="/organiser/orgs">Clubs</a>
+              <a href="/organiser/checkin">Checkin</a>
             </>
           )}
           {!token ? <a href="/login">Login</a> : <a href="/logout">Logout</a>}
