@@ -29,28 +29,15 @@ function openOutlook(ev) {
   window.open(url, '_blank');
 }
 
-async function downloadIcs(eventId, title) {
-  // Try to open in a new window (user gesture) to show Open/Save dialog;
-  // fall back to blob download if blocked.
-  const url = `/api/events/${eventId}/ics`;
-  const newWin = window.open('', '_blank');
-  if (newWin) {
-    try {
-      newWin.location.href = url;
-      return;
-    } catch {
-      try {
-        newWin.close();
-      } catch {
-        /* do nothing */
-      }
-    }
-  }
+import { http } from '@eventhub/api';
 
+async function downloadIcs(eventId, title) {
+  // Use the authenticated http client so the Authorization header is included.
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(res.statusText || 'Failed to download');
-    const blob = await res.blob();
+    const res = await http.get(`/events/${eventId}/ics`, {
+      responseType: 'blob',
+    });
+    const blob = res.data;
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     const safeTitle = (title || 'event').replace(/[^a-z0-9_\- ]/gi, '');
@@ -61,8 +48,15 @@ async function downloadIcs(eventId, title) {
     a.remove();
     URL.revokeObjectURL(blobUrl);
   } catch (e) {
-    // best-effort: open a simple alert on failure
-    alert(e?.message || 'Failed to download calendar');
+    // handle auth errors by redirecting to login if necessary
+    if (e?.response?.status === 401) {
+      // note: callers can handle navigation if desired; show alert as fallback
+      alert('You must be logged in to download calendar. Please login.');
+      return;
+    }
+    alert(
+      e?.response?.data?.message || e?.message || 'Failed to download calendar'
+    );
   }
 }
 

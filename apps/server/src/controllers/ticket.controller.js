@@ -74,7 +74,7 @@ exports.mine = async (req, res, next) => {
     const tickets = await Ticket.find({
       user: req.user.id,
       status: { $ne: 'cancelled' },
-    }).populate('event', 'title startAt venue status');
+    }).populate('event', 'title startAt endAt venue status description');
     res.json(tickets);
   } catch (e) {
     next(e);
