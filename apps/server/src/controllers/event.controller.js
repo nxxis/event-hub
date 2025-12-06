@@ -105,7 +105,21 @@ exports.getById = async (req, res, next) => {
 exports.create = async (req, res, next) => {
   try {
     const body = req.body;
-    body.organisation = req.user.organisation || body.organisation;
+
+    // If the user is an organiser, find their organisation
+    if (req.user.role === 'organiser') {
+      const org = await Organisation.findOne({ owner: req.user.id });
+      if (!org) {
+        return res.status(400).json({
+          message: 'Organiser must have an organisation to create events',
+        });
+      }
+      body.organisation = org._id;
+    } else {
+      // For admins or if organisation is provided
+      body.organisation = req.user.organisation || body.organisation;
+    }
+
     const item = await Event.create(body);
     res.status(201).json(item);
   } catch (e) {
