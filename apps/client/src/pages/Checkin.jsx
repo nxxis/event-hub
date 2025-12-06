@@ -12,7 +12,7 @@ export default function Checkin() {
   const [result, setResult] = useState(null);
   const [err, setErr] = useState('');
   const [imgPreview, setImgPreview] = useState(null);
-  const [setDecoding] = useState(false);
+  const [decoding, setDecoding] = useState(false);
   const canvasRef = useRef(null);
   const fileRef = useRef(null);
 
@@ -150,8 +150,8 @@ export default function Checkin() {
         </div>
 
         <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
-          <button className="btn" type="submit" disabled={loading}>
-            {loading ? 'Checking…' : 'Check In'}
+          <button className="btn" type="submit" disabled={loading || decoding}>
+            {loading ? 'Checking…' : decoding ? 'Decoding…' : 'Check In'}
           </button>
           <button
             className="btn muted"
